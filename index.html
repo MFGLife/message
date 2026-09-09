@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Micheal's love for Mercedes broken into science</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #EDE6D6;
+    --paper-dark: #E3DAC5;
+    --ink: #2E2418;
+    --ink-soft: #5A4B3A;
+    --forest: #3F5942;
+    --rust: #A63D2F;
+    --line: #C9BEA4;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+
+  body {
+    background:
+      radial-gradient(ellipse at top left, #F1EBDC 0%, var(--paper) 45%, #E4D9C2 100%);
+    font-family: 'Lora', serif;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 32px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* faint desk texture */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(46,36,24,0.015) 0px, rgba(46,36,24,0.015) 1px, transparent 1px, transparent 3px);
+    pointer-events: none;
+  }
+
+  .stage {
+    perspective: 1600px;
+    width: 100%;
+    max-width: 460px;
+  }
+
+  .card {
+    position: relative;
+    background: var(--paper-dark);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 44px 38px 36px;
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.5) inset,
+      0 18px 40px -14px rgba(46, 36, 24, 0.35),
+      0 4px 10px -4px rgba(46, 36, 24, 0.25);
+    transform: rotate(-0.6deg);
+    transition: transform 420ms cubic-bezier(.22,.61,.36,1), opacity 420ms ease;
+    transform-style: preserve-3d;
+  }
+
+  .card.flipping {
+    transform: rotate(-0.6deg) rotateY(90deg);
+    opacity: 0;
+  }
+
+  .card::before {
+    /* stitched border, like an old specimen label */
+    content: "";
+    position: absolute;
+    inset: 10px;
+    border: 1px dashed rgba(46,36,24,0.18);
+    border-radius: 2px;
+    pointer-events: none;
+  }
+
+  .eyebrow-row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 24px;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .collection-name {
+    font-size: 10.5px;
+    letter-spacing: 0.05em;
+    line-height: 1.5;
+    color: var(--ink-soft);
+  }
+
+  .catalog-number {
+    font-size: 13px;
+    color: var(--forest);
+    font-weight: 500;
+  }
+
+  .stamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    color: var(--rust);
+    border: 1.5px solid var(--rust);
+    border-radius: 999px;
+    padding: 4px 12px 4px 10px;
+    transform: rotate(-2deg);
+    margin-bottom: 22px;
+    width: fit-content;
+  }
+
+  .stamp .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--rust);
+  }
+
+  .entry {
+    font-size: 21px;
+    line-height: 1.55;
+    color: var(--ink);
+    font-weight: 400;
+    min-height: 130px;
+    display: flex;
+    align-items: center;
+  }
+
+  .entry em {
+    font-style: italic;
+    color: var(--forest);
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--line);
+    margin: 28px 0 20px;
+    position: relative;
+  }
+
+  .footer-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  .signed {
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-style: italic;
+    font-family: 'Lora', serif;
+  }
+
+  button#shuffle {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.03em;
+    background: var(--forest);
+    color: var(--paper);
+    border: none;
+    padding: 11px 18px;
+    border-radius: 3px;
+    cursor: pointer;
+    box-shadow: 0 3px 0 #2c3f2e, 0 6px 10px -4px rgba(46,36,24,0.4);
+    transition: transform 120ms ease, box-shadow 120ms ease;
+  }
+
+  button#shuffle:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 0 #2c3f2e, 0 8px 14px -4px rgba(46,36,24,0.45);
+  }
+
+  button#shuffle:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 #2c3f2e, 0 3px 6px -3px rgba(46,36,24,0.4);
+  }
+
+  .total {
+    margin-top: 18px;
+    text-align: center;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+    opacity: 0.75;
+  }
+
+  @media (max-width: 420px) {
+    .card { padding: 34px 24px 28px; }
+    .entry { font-size: 19px; min-height: 150px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card, .card.flipping { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="stage">
+    <div class="card" id="card">
+      <div class="eyebrow-row">
+        <span class="collection-name">MICHEAL'S LOVE FOR MERCEDES, BROKEN INTO SCIENCE</span>
+        <span class="catalog-number" id="catalogNumber">No. 000</span>
+      </div>
+
+      <div class="stamp"><span class="dot"></span> LOGGED &amp; CONFIRMED</div>
+
+      <div class="entry" id="entryText">Loading observation…</div>
+
+      <div class="divider"></div>
+
+      <div class="footer-row">
+        <span class="signed">— filed by M.</span>
+        <button id="shuffle">Another data point</button>
+      </div>
+    </div>
+    <div class="total" id="totalCount"></div>
+  </div>
+
+<script>
+  // Appendable dataset — add new entries here any time.
+  // "text" is the observation. Keep it specific and concrete.
+  const dataPoints = [
+    "You have a way of taking apart an argument I thought I understood and showing me I hadn't actually thought it through at all.",
+    "Even when we're in the middle of a disagreement, something between us stays magnetic instead of cold, and I've stopped trying to explain that to people.",
+    "You go quietly patient in moments that would make most people snap, and I know that patience isn't your default — it's a choice you're making, for me.",
+    "Asleep, you lose every ounce of the composed version of you, and what's left underneath is somehow softer and more honest.",
+    "I've caught myself just watching you sleep, not because it's a scene from a movie, but because you look like the calmest version of yourself only I get to see.",
+    "You're the kind of smart that doesn't announce itself — you just say the one thing in the room nobody else thought of.",
+    "I notice your legs before I notice almost anything else, and I've stopped pretending otherwise.",
+    "Your build is exactly the kind of quiet athletic that isn't trying to prove anything, and it gets me every time.",
+    "We like almost none of the same things, and somehow that's the reason neither of us is ever bored.",
+    "You'll talk for twenty minutes about something I have zero interest in, and I stay just to watch you be excited about it.",
+    "You give affection in a completely different language than I do, and instead of missing each other, we somehow both feel fully spoken to.",
+    "We've never had to negotiate what we want five years from now — we just seem to already agree.",
+    "You're on your own path and I'm on mine, and somehow neither of us has let go of the other's hand once.",
+    "The version of you that shows up mid-argument, still sharp, still unwilling to lose the thread — that's attractive in a way I didn't expect.",
+    "You're more patient with me than I deserve on my worst days, and you make it look effortless even though I know it isn't.",
+    "You curl in your sleep like you're protecting something, and some nights I think it might be me.",
+    "There's a stillness to your face when you're asleep that I don't get to see any other time — no performance, just you.",
+    "I think you might be the smartest person I've dated, and I don't say that lightly.",
+    "I've never met someone who could make me laugh and lose an argument to at the exact same time.",
+    "Somehow the things we don't have in common are the reason our life together isn't boring.",
+    "You need words, I need actions, and somehow between the two of us nothing ever goes unsaid.",
+    "We fight sometimes and I still don't know how we end up closer after — but I've stopped questioning it.",
+    "Your legs in literally anything you wear are a genuinely unfair advantage.",
+    "You're lean and athletic in a way that looks like you live in your body instead of just occupying it.",
+    "You wake up mid-sentence sometimes, already annoyed, already funny, and I love that you don't ease into a day.",
+    "I like that our future together isn't something we had to plan — it's something we just both already wanted.",
+    "You hold your ground in an argument better than almost anyone I know, and I respect it even when I'm losing.",
+    "The most patient I've ever seen you is with people who don't deserve it, and it says everything about you.",
+    "You're sweet in your sleep in a way you'd probably deny if I told you.",
+    "There's no one I've found more beautiful, and I've stopped being surprised by that fact.",
+    "I think our differences are doing more work to keep this interesting than anything we actually have in common.",
+    "You've never once made me feel like my love language was inconvenient for you.",
+    "We don't agree on much, but we agree on where we're going, and that's the part that matters.",
+    "You walk your own path hard enough that I have to actually keep up, and I like that about you.",
+    "I've learned that an argument with you isn't the end of anything — sometimes it's where things actually get good.",
+    "You've got this maturity you put on like a coat, and I've seen what's underneath it, and I like that even more.",
+    "Watching you sleep shouldn't be this calming, but it consistently is.",
+    "You're razor smart in the kind of way that makes me actually think harder just to keep up.",
+    "Your body type is exactly my type, and I've stopped pretending I have a type beyond you.",
+    "The way we spend a weekend looks nothing alike on paper and somehow works every single time.",
+    "You show love in ways I have to pay attention to notice, and I've gotten good at noticing.",
+    "Neither of us has ever had to convince the other where this is headed.",
+    "You've got your own direction and I've got mine, and the only non-negotiable is that we're doing it side by side.",
+    "You're more composed in conflict than I am, and it makes me want to actually rise to meet you instead of check out.",
+    "Even patient-you has a limit, and somehow watching you finally hit it is still endearing.",
+    "Sleep strips away every bit of performance you carry the rest of the day, and what's left is the version I trust most.",
+    "I think you're the most beautiful person I've ever been with, and it's not just the obvious things — it's the whole picture.",
+    "Our interests barely overlap and somehow that's exactly why neither of us runs out of things to show the other.",
+    "You balance out everything I'm bad at giving, without ever making it feel like a trade.",
+    "We're two completely different people walking two completely different paths, and somehow that's never once felt like a problem.",
+    "You're patient with the dog in a way that makes me want to be a better version of myself, not just a better pet owner.",
+    "Watching you crouch down to talk to the dog like she understands you completely is somehow one of the most attractive things I've seen you do.",
+    "You're a scientist by training and a farmer by disposition, and somehow both of those show up in how you handle me.",
+    "You talk about soil and root systems with the same seriousness other people reserve for stock portfolios, and I could listen to it for hours.",
+    "You're building a career in flowers, and I don't think that's a coincidence — you were always going to end up somewhere beautiful grows on purpose.",
+    "The closer a woman is to a flower, the more beautiful I find her, and you've built your entire future inside that comparison without even knowing it.",
+    "You know the name of every plant we walk past, and I've started asking just to watch you light up answering.",
+    "You're an ecologist down to how you think — everything connected to everything else, nothing existing on its own — and it's exactly how you treat us.",
+    "You put up with how analytical my brain gets, and instead of shutting it down, you find a way to meet me inside it.",
+    "You challenge me in a way most people gave up doing a long time ago, and I didn't realize how much I needed that until you.",
+    "You're transparent in a way that used to make me nervous and now makes me feel like I'm never guessing where I stand with you.",
+    "Trust with you didn't take the usual amount of time it takes with everyone else — it just showed up early and stayed.",
+    "We ended up on the same page about spirituality almost by accident, and neither of us had to convince the other of anything.",
+    "You're open about what you believe in a way that could easily read as too much, and somehow on you it just reads as cute.",
+    "You've got a whole framework built around numerology, and I tease you about it, but I never actually dismiss it.",
+    "Our belief systems don't match exactly, but they sit close enough together that we're never really arguing, just comparing notes.",
+    "You explain a flower's growth cycle like it's a small miracle happening on a schedule, and I believe you every time.",
+    "You spend your working hours elbow-deep in dirt and somehow still manage to be the most elegant person I know.",
+    "You're gentle with the dog in exactly the way you're gentle with me on my worst days — patient, unbothered, like it's not even a choice.",
+    "I think you chose flowers as a career the same way I chose you — because something about it was just obviously right.",
+    "You bring the same scientific patience to a field of crops that you bring to me when I'm being difficult.",
+    "You'll happily explain pollination for twenty minutes and somehow make it sound like the most romantic subject in the world.",
+    "You take being a farmer seriously in a way that makes 'delicate' and 'tough' both true about you at the same time.",
+    "You're the only person who's ever made me actually want to learn what an ecosystem service is.",
+    "The dog trusts you immediately and completely, and dogs are usually right about people.",
+    "You've got a numerology chart for basically everyone we know, and I secretly want to know what mine says.",
+    "You and I frame the world in almost the same shape, just from different angles, and it makes conversations with you feel like assembly instead of debate.",
+    "I've never had to wonder what you were really thinking, because you just tell me, plainly, every time.",
+    "You talk to plants the way some people talk to pets, and somehow it's not weird, it's just you.",
+    "You've turned a career around growing things into something that fits you perfectly — patient, precise, and quietly thriving.",
+    "Being an ecologist means you notice things most people walk right past, and I've started noticing you noticing.",
+    "You're soft with the dog first thing in the morning before you're even fully awake, and it's the sweetest version of you nobody else gets to see.",
+    "You didn't have to convince me your spirituality was real — you just lived it consistently enough that I believed it on its own.",
+    "You being open about what you believe, unapologetically, is one of the more disarming things about you.",
+    "I think your numerology obsession and my analytical brain are somehow speaking the same language in two different accents.",
+    "You've spent your career becoming an expert in things that grow slowly, and I think that patience just carried straight over into loving me.",
+    "You challenge my logic just enough to make it better, never enough to make me feel small for having it.",
+    "You handle the dog's bad days with the same evenness you handle mine, and I don't think that's a coincidence.",
+    "Farming teaches you that most good things take longer than you want them to, and you've applied that lesson to us without ever saying it out loud.",
+    "You're a scientist about everything except us, where you just trust it and let it be what it is.",
+    "The fact that your future is in flowers makes it almost too easy to think of you as beautiful — the metaphor just writes itself.",
+    "You're transparent even when it costs you something, and I've learned to trust that about you completely.",
+    "We're spiritually adjacent enough that neither of us has to defend our beliefs to the other, just share them.",
+    "You've got this quiet respect for growth cycles, seasons, timing — and somehow you extended all of that patience to me too.",
+    "I like that you take my analytical brain as a challenge to solve instead of a wall to avoid.",
+    "You being a farmer means your hands are never soft, and I somehow find that more attractive than if they were.",
+    "The dog runs straight to you every time, no hesitation, and I get it completely.",
+    "You've built an entire worldview out of ecology, numerology, and observation, and somehow it all fits together when you explain it.",
+    "You're the rare kind of open that doesn't feel performative — just honestly, plainly you.",
+    "I think about you standing in a field of flowers you're growing on purpose, and I don't think I've ever found anything more beautiful."
+  ];
+
+  const cardEl = document.getElementById('card');
+  const entryEl = document.getElementById('entryText');
+  const catalogEl = document.getElementById('catalogNumber');
+  const totalEl = document.getElementById('totalCount');
+  const shuffleBtn = document.getElementById('shuffle');
+
+  let lastIndex = -1;
+
+  function formatCatalog(n) {
+    // true, 1-indexed count — no artificial offset now that the collection is real
+    const display = n + 1;
+    return 'No. ' + String(display).padStart(3, '0');
+  }
+
+  function pickIndex() {
+    if (dataPoints.length === 1) return 0;
+    let i;
+    do {
+      i = Math.floor(Math.random() * dataPoints.length);
+    } while (i === lastIndex);
+    return i;
+  }
+
+  function render(index) {
+    entryEl.textContent = dataPoints[index];
+    catalogEl.textContent = formatCatalog(index);
+    totalEl.textContent = dataPoints.length + ' OBSERVATIONS ON FILE, AND COUNTING';
+    lastIndex = index;
+  }
+
+  function showRandom() {
+    cardEl.classList.add('flipping');
+    setTimeout(() => {
+      render(pickIndex());
+      cardEl.classList.remove('flipping');
+    }, 220);
+  }
+
+  shuffleBtn.addEventListener('click', showRandom);
+
+  // initial load
+  render(pickIndex());
+</script>
+
+</body>
+</html>
