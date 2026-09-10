@@ -38,7 +38,6 @@
     overflow: hidden;
   }
 
-  /* faint desk texture */
   body::before {
     content: "";
     position: fixed;
@@ -75,7 +74,6 @@
   }
 
   .card::before {
-    /* stitched border, like an old specimen label */
     content: "";
     position: absolute;
     inset: 10px;
@@ -232,8 +230,7 @@
   </div>
 
 <script>
-  // Appendable dataset — add new entries here any time.
-  // "text" is the observation. Keep it specific and concrete.
+
   const dataPoints = [
     "You have a way of taking apart an argument I thought I understood and showing me I hadn't actually thought it through at all.",
     "Even when we're in the middle of a disagreement, something between us stays magnetic instead of cold, and I've stopped trying to explain that to people.",
@@ -299,7 +296,7 @@
     "Trust with you didn't take the usual amount of time it takes with everyone else — it just showed up early and stayed.",
     "We ended up on the same page about spirituality almost by accident, and neither of us had to convince the other of anything.",
     "You're open about what you believe in a way that could easily read as too much, and somehow on you it just reads as cute.",
-    "You've got a whole framework built around numerology, and I tease you about it, but I never actually dismiss it.",
+    "You've got a whole framework built around numerology, I haven't grasped the concept all the way yet, but I see it's importance.",
     "Our belief systems don't match exactly, but they sit close enough together that we're never really arguing, just comparing notes.",
     "You explain a flower's growth cycle like it's a small miracle happening on a schedule, and I believe you every time.",
     "You spend your working hours elbow-deep in dirt and somehow still manage to be the most elegant person I know.",
@@ -346,7 +343,7 @@
   let lastIndex = -1;
 
   function formatCatalog(n) {
-    // true, 1-indexed count — no artificial offset now that the collection is real
+
     const display = n + 1;
     return 'No. ' + String(display).padStart(3, '0');
   }
@@ -377,7 +374,6 @@
 
   shuffleBtn.addEventListener('click', showRandom);
 
-  // initial load
   render(pickIndex());
 </script>
 
