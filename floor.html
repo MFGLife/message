@@ -2,32 +2,25 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta
-    name="viewport"
-    content="width=device-width,
-             initial-scale=1,
-             maximum-scale=1,
-             user-scalable=no"
->
+<meta name="viewport"
+      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
 <title>Floor Topology Mapper</title>
 
 <style>
-
-/* =========================================================
-   MOBILE-FIRST DESIGN
-========================================================= */
-
 :root {
-    --bg: #0d0d0d;
-    --panel: #181818;
-    --panel2: #222;
-    --border: #3b3b3b;
-    --text: #f1f1f1;
-    --muted: #929292;
-    --accent: #d6aa55;
-    --accent-light: #f0d48a;
-    --danger: #c85d5d;
-    --node: #ffffff;
+    --bg: #0d0f12;
+    --panel: #171a1f;
+    --panel2: #20242a;
+    --line: #343a42;
+    --text: #f1f3f5;
+    --muted: #9da5ae;
+    --accent: #d9b45b;
+    --accent2: #72a7ff;
+    --danger: #d96b6b;
+    --good: #72c28b;
+    --handle: #ffb84d;
+    --measurement: #62b5ff;
 }
 
 * {
@@ -41,12 +34,7 @@ body {
     padding: 0;
     background: var(--bg);
     color: var(--text);
-    font-family:
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        "Segoe UI",
-        sans-serif;
+    font-family: Arial, Helvetica, sans-serif;
 }
 
 body {
@@ -60,13 +48,12 @@ select {
 }
 
 button {
+    border: 1px solid var(--line);
+    background: var(--panel2);
     color: var(--text);
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 9px;
+    border-radius: 10px;
     min-height: 44px;
-    padding: 9px 12px;
-    touch-action: manipulation;
+    padding: 8px 12px;
 }
 
 button:active {
@@ -74,4031 +61,2264 @@ button:active {
 }
 
 button.active {
-    background: var(--accent);
     border-color: var(--accent);
-    color: #111;
-    font-weight: 700;
+    background: #302a1b;
+    color: var(--accent);
 }
 
-input,
-select {
+button.danger {
+    border-color: var(--danger);
+    color: #ffaaaa;
+}
+
+input {
     width: 100%;
-    min-height: 48px;
-    padding: 10px;
-    color: var(--text);
-    background: #101010;
-    border: 1px solid var(--border);
+    min-height: 44px;
+    border: 1px solid var(--line);
     border-radius: 8px;
+    background: #0e1013;
+    color: var(--text);
+    padding: 8px 10px;
+    font-size: 17px;
 }
 
-input:focus,
-select:focus {
+input:focus {
     outline: 2px solid var(--accent);
     border-color: var(--accent);
 }
 
+header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(13,15,18,.97);
+    border-bottom: 1px solid var(--line);
+    padding: 12px;
+}
 
-/* =========================================================
-   APP
-========================================================= */
+header h1 {
+    margin: 0;
+    font-size: 19px;
+}
 
-.app {
-    width: 100%;
-    max-width: 1500px;
+header .sub {
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 3px;
+}
+
+.toolbar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.toolbar button {
+    font-size: 12px;
+    min-height: 42px;
+}
+
+main {
+    max-width: 1000px;
     margin: auto;
     padding: 10px;
 }
 
-.header {
-    margin-bottom: 10px;
-}
-
-.header h1 {
-    margin: 0;
-    font-size: 21px;
-}
-
-.header p {
-    margin: 3px 0 0;
-    color: var(--muted);
-    font-size: 12px;
-}
-
-
-/* =========================================================
-   TOOLBAR
-========================================================= */
-
-.toolbar {
-    display: grid;
-    grid-template-columns:
-        repeat(2, minmax(0, 1fr));
-    gap: 6px;
-    margin-bottom: 8px;
-}
-
-.toolbar button {
-    width: 100%;
-}
-
-
-/* =========================================================
-   MAP
-========================================================= */
-
-.map-container {
+.map-wrap {
     position: relative;
     width: 100%;
-    border: 1px solid var(--border);
-    border-radius: 10px;
+    aspect-ratio: 1 / .72;
+    min-height: 360px;
+    max-height: 75vh;
+    background:
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px),
+        #111419;
+    background-size: 25px 25px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
     overflow: hidden;
-    background: #151515;
-}
-
-#floorMap {
-    display: block;
-    width: 100%;
-    height: auto;
-    min-height: 390px;
-
     touch-action: none;
-
-    background-image:
-        linear-gradient(
-            rgba(255,255,255,.025) 1px,
-            transparent 1px
-        ),
-        linear-gradient(
-            90deg,
-            rgba(255,255,255,.025) 1px,
-            transparent 1px
-        );
-
-    background-size: 35px 35px;
 }
 
+svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    touch-action: none;
+}
 
-/* =========================================================
-   MAP NODE STYLING
-========================================================= */
+#floor {
+    fill: rgba(255,255,255,.025);
+    stroke: #aeb5bd;
+    stroke-width: 2;
+}
 
-.corner-node {
+.corner {
+    fill: var(--accent);
+    stroke: #fff;
+    stroke-width: 2;
     cursor: grab;
 }
 
-.corner-node:active {
-    cursor: grabbing;
+.corner.locked {
+    fill: #777;
 }
 
-.corner-node circle {
-    fill: #111;
+.measurement {
+    fill: var(--measurement);
     stroke: white;
-    stroke-width: 2.5;
+    stroke-width: 2;
+    cursor: pointer;
 }
 
-.corner-node.selected circle {
-    fill: var(--accent);
-    stroke: white;
-    stroke-width: 4;
-}
-
-.corner-label {
-    fill: white;
-    font-size: 11px;
-    font-weight: 700;
-    pointer-events: none;
-    text-anchor: middle;
-}
-
-
-/* Measurement nodes */
-
-.measure-node circle {
-    fill: #111;
-    stroke: var(--accent-light);
-    stroke-width: 2.5;
-}
-
-.measure-node.selected circle {
-    fill: var(--accent);
-    stroke: white;
-    stroke-width: 4;
-}
-
-.measure-label {
-    fill: white;
-    font-size: 10px;
-    font-weight: 700;
-    pointer-events: none;
-    text-anchor: middle;
-}
-
-.measure-value {
-    fill: var(--accent-light);
-    font-size: 9px;
-    pointer-events: none;
-    text-anchor: middle;
-}
-
-
-/* Transition handles */
-
-.transition-handle {
-    cursor: ew-resize;
-}
-
-.transition-handle circle {
-    fill: var(--accent);
-    stroke: white;
-    stroke-width: 2.5;
-}
-
-.transition-handle.selected circle {
-    fill: white;
+.measurement.selected {
+    fill: #fff;
     stroke: var(--accent);
     stroke-width: 4;
 }
 
 .transition-line {
-    stroke: var(--accent);
-    stroke-width: 7;
-    opacity: .75;
+    stroke: var(--handle);
+    stroke-width: 6;
+    stroke-linecap: round;
+    opacity: .85;
 }
 
-.transition-line.none {
-    display: none;
+.wall-line {
+    stroke: #727982;
+    stroke-width: 2;
 }
 
-.transition-label {
-    fill: var(--accent-light);
-    font-size: 10px;
-    font-weight: 700;
+.handle {
+    fill: var(--handle);
+    stroke: #fff;
+    stroke-width: 2;
+    cursor: ew-resize;
+}
+
+.handle.locked {
+    fill: #777;
+}
+
+.handle-label {
+    fill: white;
+    font-size: 11px;
     text-anchor: middle;
+    pointer-events: none;
 }
 
-
-/* Topology */
+.zone-label {
+    fill: var(--handle);
+    font-size: 11px;
+    text-anchor: middle;
+    pointer-events: none;
+}
 
 .topology-cell {
-    stroke: none;
+    pointer-events: none;
+    opacity: .48;
 }
 
-
-/* =========================================================
-   MAP HELP
-========================================================= */
-
-.map-help {
+.map-instruction {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
     padding: 7px 9px;
-    color: var(--muted);
+    border-radius: 8px;
+    background: rgba(0,0,0,.72);
+    color: #dce0e4;
     font-size: 11px;
-    line-height: 1.4;
-}
-
-
-/* =========================================================
-   LEGEND
-========================================================= */
-
-.legend {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    color: var(--muted);
-    font-size: 10px;
-    padding: 6px 2px;
-}
-
-.gradient {
-    flex: 1;
-    height: 10px;
-    border-radius: 5px;
-    background:
-        linear-gradient(
-            90deg,
-            #263238,
-            #607d8b,
-            #cfd8dc,
-            #fff59d,
-            #ffb74d,
-            #e64a19
-        );
-}
-
-
-/* =========================================================
-   MOBILE CONTROL PANEL
-========================================================= */
-
-.controls {
-    margin-top: 9px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+    pointer-events: none;
 }
 
 .panel {
+    margin-top: 10px;
     background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 9px;
-    padding: 11px;
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
 }
 
 .panel-title {
-    font-size: 13px;
-    font-weight: 700;
-    margin-bottom: 8px;
+    padding: 11px 12px;
+    font-weight: bold;
+    border-bottom: 1px solid var(--line);
 }
 
-.grid2 {
+.panel-body {
+    padding: 10px;
+}
+
+.grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 7px;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap: 8px;
 }
 
-label {
+@media (min-width: 700px) {
+    .grid.three {
+        grid-template-columns: repeat(3, minmax(0,1fr));
+    }
+}
+
+.field label {
     display: block;
     color: var(--muted);
     font-size: 11px;
+    margin-bottom: 4px;
 }
 
-label input,
-label select {
-    margin-top: 4px;
-}
-
-.full {
-    width: 100%;
-    margin-top: 7px;
-}
-
-.value {
-    font-size: 20px;
-    font-weight: 700;
+.measure-row,
+.side-row {
+    display: grid;
+    grid-template-columns: 45px 1fr 42px;
+    gap: 6px;
+    align-items: center;
     margin-bottom: 7px;
 }
 
-.help {
-    color: var(--muted);
-    font-size: 11px;
-    line-height: 1.45;
+.measure-row.selected {
+    background: rgba(98,181,255,.09);
+    border-radius: 8px;
+    padding: 4px;
+    margin-left: -4px;
+    margin-right: -4px;
 }
 
-.stat {
-    display: flex;
-    justify-content: space-between;
-    padding: 4px 0;
-    border-bottom: 1px solid rgba(255,255,255,.05);
+.measure-name,
+.side-name {
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.small-btn {
+    min-height: 40px;
+    padding: 4px;
     font-size: 12px;
 }
 
-.stat span {
-    color: var(--muted);
+.side-row {
+    grid-template-columns: 45px 1fr 70px;
 }
 
-
-/* =========================================================
-   SIDE / TRANSITION LIST
-========================================================= */
-
-.side-list {
-    display: flex;
-    flex-direction: column;
+.side-controls {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 5px;
 }
 
-.side-row {
-    display: grid;
-    grid-template-columns:
-        48px
-        1fr
-        65px;
+.side-status {
+    font-size: 11px;
+    color: var(--muted);
+}
 
-    gap: 6px;
+.side-status.active {
+    color: var(--handle);
+}
 
-    align-items: center;
-
-    padding: 7px;
-
-    border:
-        1px solid
-        var(--border);
-
-    border-radius: 7px;
-
+.lock-btn {
     font-size: 11px;
 }
 
-.side-row.active {
-    border-color: var(--accent);
+.output {
+    background: #0c0e11;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px;
+    white-space: pre-wrap;
+    font-family: monospace;
+    font-size: 12px;
+    line-height: 1.55;
+    overflow-x: auto;
 }
 
-.side-name {
-    font-weight: 700;
-}
-
-.side-distance {
+.legend {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 11px;
     color: var(--muted);
-    text-align: right;
 }
 
-
-/* =========================================================
-   DESKTOP
-========================================================= */
-
-@media(min-width: 850px) {
-
-    .app {
-        padding: 18px;
-    }
-
-    .toolbar {
-        grid-template-columns:
-            repeat(6, auto);
-    }
-
-    .layout {
-        display: grid;
-
-        grid-template-columns:
-            minmax(0, 1fr)
-            320px;
-
-        gap: 12px;
-    }
-
-    .controls {
-        margin-top: 0;
-    }
-
-    #floorMap {
-        min-height: 600px;
-    }
-
+.legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
 }
 
+.dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.info {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.hidden {
+    display: none !important;
+}
+
+#toast {
+    position: fixed;
+    z-index: 100;
+    left: 50%;
+    bottom: 20px;
+    transform: translateX(-50%);
+    background: #f1f3f5;
+    color: #111;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s;
+}
+
+#toast.show {
+    opacity: 1;
+}
 </style>
 </head>
 
-
 <body>
 
-<div class="app">
-
-    <div class="header">
-
-        <h1>
-            Floor Topology Mapper
-        </h1>
-
-        <p>
-            Laser elevations → floor topology →
-            transition zones → correction planning
-        </p>
-
+<header>
+    <h1>Floor Topology Mapper</h1>
+    <div class="sub">
+        Four-corner floor perimeter • sliding transition zones • laser elevation mapping
     </div>
 
-
-    <div class="layout">
-
-
-        <!-- =================================================
-             MAP
-        ================================================== -->
-
-        <div>
-
-            <div class="toolbar">
-
-                <button
-                    id="perimeterMode"
-                    class="active">
-
-                    Perimeter
-
-                </button>
-
-                <button
-                    id="measurementMode">
-
-                    Elevation
-
-                </button>
-
-                <button
-                    id="topologyMode">
-
-                    Topology
-
-                </button>
-
-                <button
-                    id="targetMode">
-
-                    Target
-
-                </button>
-
-                <button
-                    id="generateButton">
-
-                    Generate
-
-                </button>
-
-                <button
-                    id="clearButton">
-
-                    Clear
-
-                </button>
-
-            </div>
-
-
-            <div class="map-container">
-
-                <svg
-                    id="floorMap"
-                    viewBox="0 0 1000 650">
-
-                </svg>
-
-            </div>
-
-
-            <div class="legend">
-
-                <span>LOW</span>
-
-                <div class="gradient"></div>
-
-                <span>HIGH</span>
-
-            </div>
-
-
-            <div class="map-help">
-
-                <strong>Perimeter:</strong>
-                tap to add corners; drag a corner to reposition it.
-
-                <br>
-
-                <strong>Elevation:</strong>
-                tap to add a laser measurement.
-
-                <br>
-
-                <strong>Topology:</strong>
-                tap a wall to select its transition zone.
-                Drag the two transition handles along that wall.
-
-            </div>
-
-        </div>
-
-
-        <!-- =================================================
-             CONTROLS
-        ================================================== -->
-
-        <div class="controls">
-
-
-            <!-- SELECTED NODE -->
-
-            <div class="panel">
-
-                <div class="panel-title">
-                    Selected Point
-                </div>
-
-                <div
-                    id="selectedNode"
-                    class="value">
-
-                    —
-
-                </div>
-
-
-                <label>
-
-                    Elevation
-
-                    <input
-                        id="elevationInput"
-                        type="number"
-                        step="0.001"
-                        inputmode="decimal"
-                        placeholder="0.000">
-
-                </label>
-
-
-                <button
-                    id="saveElevation"
-                    class="full">
-
-                    Save Elevation
-
-                </button>
-
-            </div>
-
-
-            <!-- ACTIVE SIDE -->
-
-            <div class="panel">
-
-                <div class="panel-title">
-                    Selected Side
-                </div>
-
-                <div
-                    id="selectedSide"
-                    class="value">
-
-                    None
-
-                </div>
-
-
-                <div class="grid2">
-
-                    <label>
-
-                        Start %
-
-                        <input
-                            id="transitionStart"
-                            type="number"
-                            min="0"
-                            max="100"
-                            step="1"
-                            value="50">
-
-                    </label>
-
-
-                    <label>
-
-                        End %
-
-                        <input
-                            id="transitionEnd"
-                            type="number"
-                            min="0"
-                            max="100"
-                            step="1"
-                            value="50">
-
-                    </label>
-
-                </div>
-
-
-                <div
-                    class="help"
-                    style="margin-top:7px">
-
-                    Start = End means
-                    <strong>no transition</strong>
-                    on this side.
-
-                    <br>
-
-                    Separate them to create a
-                    selective transition/opening.
-
-                </div>
-
-
-                <button
-                    id="collapseTransition"
-                    class="full">
-
-                    Remove Transition
-
-                </button>
-
-            </div>
-
-
-            <!-- SIDE LIST -->
-
-            <div class="panel">
-
-                <div class="panel-title">
-                    Perimeter Sides
-                </div>
-
-                <div
-                    id="sideList"
-                    class="side-list">
-
-                </div>
-
-            </div>
-
-
-            <!-- TARGET -->
-
-            <div class="panel">
-
-                <div class="panel-title">
-                    Finished Reference
-                </div>
-
-
-                <label>
-
-                    Target Elevation
-
-                    <input
-                        id="targetElevation"
-                        type="number"
-                        step="0.001"
-                        inputmode="decimal"
-                        placeholder="Automatic">
-
-                </label>
-
-                <div
-                    class="help"
-                    style="margin-top:6px">
-
-                    If blank, the highest measured
-                    point is used as the reference.
-
-                </div>
-
-            </div>
-
-
-            <!-- STATS -->
-
-            <div class="panel">
-
-                <div class="panel-title">
-                    Floor Topology
-                </div>
-
-                <div class="stat">
-
-                    <span>
-                        Measurements
-                    </span>
-
-                    <strong
-                        id="pointCount">
-                        0
-                    </strong>
-
-                </div>
-
-                <div class="stat">
-
-                    <span>
-                        Lowest
-                    </span>
-
-                    <strong
-                        id="lowestPoint">
-                        —
-                    </strong>
-
-                </div>
-
-                <div class="stat">
-
-                    <span>
-                        Highest
-                    </span>
-
-                    <strong
-                        id="highestPoint">
-                        —
-                    </strong>
-
-                </div>
-
-                <div class="stat">
-
-                    <span>
-                        Variation
-                    </span>
-
-                    <strong
-                        id="totalVariation">
-                        —
-                    </strong>
-
-                </div>
-
-                <div class="stat">
-
-                    <span>
-                        Correction
-                    </span>
-
-                    <strong
-                        id="maximumCorrection">
-                        —
-                    </strong>
-
-                </div>
-
-            </div>
-
-
-            <!-- CONSTRUCTION -->
-
-            <div class="panel">
-
-                <div class="panel-title">
-                    Construction
-                </div>
-
-                <div class="grid2">
-
-                    <label>
-
-                        Final Sheet
-
-                        <select
-                            id="underlayment">
-
-                            <option value="0.5">
-                                1/2"
-                            </option>
-
-                            <option value="0.375">
-                                3/8"
-                            </option>
-
-                            <option value="0.25">
-                                1/4"
-                            </option>
-
-                        </select>
-
-                    </label>
-
-
-                    <label>
-
-                        SLC Minimum
-
-                        <input
-                            id="slcMinimum"
-                            type="number"
-                            value="0.125"
-                            step="0.01"
-                            inputmode="decimal">
-
-                    </label>
-
-                </div>
-
-
-                <div
-                    id="constructionOutput"
-                    class="help"
-                    style="margin-top:8px">
-
-                    Generate the topology.
-
-                </div>
-
-            </div>
-
-
-            <!-- SAVE -->
-
-            <div class="panel">
-
-                <div class="panel-title">
-                    Project
-                </div>
-
-                <button
-                    id="exportButton"
-                    class="full">
-
-                    Export Project
-
-                </button>
-
-
-                <label
-                    style="margin-top:8px">
-
-                    Import Project
-
-                    <input
-                        id="importFile"
-                        type="file"
-                        accept=".json">
-
-                </label>
-
-            </div>
-
-        </div>
-
+    <div class="toolbar">
+        <button id="btnMeasure" class="active">Measure</button>
+        <button id="btnZones">Zones</button>
+        <button id="btnTopology">Topology</button>
+        <button id="btnGenerate">Generate</button>
     </div>
+</header>
 
+<main>
+
+<div class="map-wrap" id="mapWrap">
+
+    <svg id="map" viewBox="0 0 1000 700">
+
+        <g id="topologyLayer"></g>
+
+        <polygon id="floor"
+                 points="150,100 850,100 850,600 150,600"></polygon>
+
+        <g id="wallLayer"></g>
+        <g id="zoneLayer"></g>
+        <g id="measurementLayer"></g>
+        <g id="cornerLayer"></g>
+
+    </svg>
+
+    <div class="map-instruction" id="mapInstruction">
+        Tap inside floor to add elevation point
+    </div>
 </div>
 
 
+<!-- PERIMETER -->
+<section class="panel">
+
+    <div class="panel-title">
+        Floor Perimeter
+    </div>
+
+    <div class="panel-body">
+
+        <div class="grid">
+
+            <div class="field">
+                <label>P1 → P2 length</label>
+                <input id="len0" inputmode="decimal" placeholder="18' 4&quot;">
+            </div>
+
+            <div class="field">
+                <label>P2 → P3 length</label>
+                <input id="len1" inputmode="decimal" placeholder="12' 0&quot;">
+            </div>
+
+            <div class="field">
+                <label>P3 → P4 length</label>
+                <input id="len2" inputmode="decimal" placeholder="18' 4&quot;">
+            </div>
+
+            <div class="field">
+                <label>P4 → P1 length</label>
+                <input id="len3" inputmode="decimal" placeholder="12' 0&quot;">
+            </div>
+
+        </div>
+
+        <p class="info">
+            The four yellow points are the only perimeter nodes.
+            Drag a corner to reshape the floor. Tapping empty space inside
+            the floor creates an elevation measurement instead.
+        </p>
+
+    </div>
+</section>
+
+
+<!-- ZONES -->
+<section class="panel">
+
+    <div class="panel-title">
+        Transition Zones
+    </div>
+
+    <div class="panel-body">
+
+        <p class="info">
+            Each wall has two independent sliding handles.
+            When both handles occupy the same position, that wall has
+            <strong>no transition</strong>. Separate them to define a
+            selective transition/opening.
+        </p>
+
+        <div id="sideList"></div>
+
+    </div>
+</section>
+
+
+<!-- MEASUREMENTS -->
+<section class="panel">
+
+    <div class="panel-title">
+        Laser Elevation Measurements
+    </div>
+
+    <div class="panel-body">
+
+        <div id="measurementList"></div>
+
+        <button id="clearMeasurements" class="danger">
+            Clear Elevation Points
+        </button>
+
+    </div>
+</section>
+
+
+<!-- TARGET -->
+<section class="panel">
+
+    <div class="panel-title">
+        Finish Level
+    </div>
+
+    <div class="panel-body">
+
+        <div class="grid three">
+
+            <div class="field">
+                <label>Target elevation</label>
+                <input id="targetElevation"
+                       inputmode="decimal"
+                       placeholder="0.000">
+            </div>
+
+            <div class="field">
+                <label>Final sheet thickness</label>
+                <input id="sheetThickness"
+                       inputmode="decimal"
+                       value="0.500">
+            </div>
+
+            <div class="field">
+                <label>SLC minimum thickness</label>
+                <input id="slcMinimum"
+                       inputmode="decimal"
+                       value="0.125">
+            </div>
+
+        </div>
+
+        <p class="info">
+            Enter elevations using one consistent laser reference.
+            The app calculates relative correction required to reach
+            the selected target plane.
+        </p>
+
+    </div>
+</section>
+
+
+<!-- OUTPUT -->
+<section class="panel">
+
+    <div class="panel-title">
+        Construction Output
+    </div>
+
+    <div class="panel-body">
+
+        <div class="legend">
+            <span>
+                <i class="dot" style="background:#62b5ff"></i>
+                Measurement
+            </span>
+
+            <span>
+                <i class="dot" style="background:#ffb84d"></i>
+                Transition
+            </span>
+
+            <span>
+                <i class="dot" style="background:#d9b45b"></i>
+                Corner
+            </span>
+        </div>
+
+        <br>
+
+        <div id="output" class="output">
+No topology generated.
+        </div>
+
+    </div>
+</section>
+
+</main>
+
+<div id="toast"></div>
+
+
 <script>
-
 /* =========================================================
-   FLOOR TOPOLOGY APPLICATION
-========================================================= */
+   FLOOR TOPOLOGY MAPPER
+   ========================================================= */
 
-(() => {
+const svg = document.getElementById("map");
+const floor = document.getElementById("floor");
 
-"use strict";
-
-
-/* =========================================================
-   STATE
-========================================================= */
+const topologyLayer = document.getElementById("topologyLayer");
+const wallLayer = document.getElementById("wallLayer");
+const zoneLayer = document.getElementById("zoneLayer");
+const measurementLayer = document.getElementById("measurementLayer");
+const cornerLayer = document.getElementById("cornerLayer");
 
 const state = {
 
-    mode: "perimeter",
+    mode: "measure",
 
-    perimeter: [],
+    /* EXACTLY FOUR PERIMETER CORNERS */
+    corners: [
+        {id:"P1", x:150, y:100, locked:false},
+        {id:"P2", x:850, y:100, locked:false},
+        {id:"P3", x:850, y:600, locked:false},
+        {id:"P4", x:150, y:600, locked:false}
+    ],
+
+    /*
+       Each side has two handles.
+
+       position is 0 → 1 along the side.
+
+       If start === end:
+           NO TRANSITION
+
+       If start !== end:
+           TRANSITION ZONE
+    */
+    sides: [
+        {id:"S1", name:"P1 → P2", start:0.5, end:0.5,
+         startLocked:false, endLocked:false},
+
+        {id:"S2", name:"P2 → P3", start:0.5, end:0.5,
+         startLocked:false, endLocked:false},
+
+        {id:"S3", name:"P3 → P4", start:0.5, end:0.5,
+         startLocked:false, endLocked:false},
+
+        {id:"S4", name:"P4 → P1", start:0.5, end:0.5,
+         startLocked:false, endLocked:false}
+    ],
 
     measurements: [],
 
-    sides: [],
-
-    selectedNode: null,
+    selectedMeasurement: null,
 
     selectedSide: null,
 
-    draggingNode: null,
+    dragging: null,
 
-    draggingHandle: null,
+    didDrag: false,
 
-    targetElevation: null,
-
-    generated: false
-
+    topology: null
 };
 
 
-const SVG_WIDTH = 1000;
-const SVG_HEIGHT = 650;
-
-const svg =
-    document.getElementById(
-        "floorMap"
-    );
-
-
 /* =========================================================
-   BASIC HELPERS
-========================================================= */
+   BASIC SVG HELPERS
+   ========================================================= */
 
-function svgElement(
-    tag,
-    attributes = {}
-) {
+function svgPoint(evt) {
 
-    const el =
-        document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            tag
-        );
-
-    Object.entries(
-        attributes
-    ).forEach(
-        ([key, value]) => {
-
-            el.setAttribute(
-                key,
-                value
-            );
-
-        }
-    );
-
-    return el;
-
-}
-
-
-function newId() {
-
-    return (
-        Math.random()
-            .toString(36)
-            .substring(2) +
-        Date.now()
-    );
-
-}
-
-
-function allNodes() {
-
-    return [
-
-        ...state.perimeter,
-
-        ...state.measurements
-
-    ];
-
-}
-
-
-/* =========================================================
-   SCREEN → SVG COORDINATES
-========================================================= */
-
-function getSVGPoint(event) {
-
-    const rect =
-        svg.getBoundingClientRect();
+    const rect = svg.getBoundingClientRect();
 
     return {
+        x: (evt.clientX - rect.left) *
+           (1000 / rect.width),
 
-        x:
-            (
-                event.clientX -
-                rect.left
-            )
-            /
-            rect.width
-            *
-            SVG_WIDTH,
-
-        y:
-            (
-                event.clientY -
-                rect.top
-            )
-            /
-            rect.height
-            *
-            SVG_HEIGHT
-
+        y: (evt.clientY - rect.top) *
+           (700 / rect.height)
     };
-
 }
 
 
-/* =========================================================
-   DISTANCE
-========================================================= */
+function clamp(v, min, max) {
+    return Math.max(min, Math.min(max, v));
+}
 
-function distance(
-    a,
-    b
-) {
 
-    return Math.hypot(
-        a.x - b.x,
-        a.y - b.y
+function distance(a,b) {
+
+    return Math.sqrt(
+        Math.pow(b.x-a.x,2) +
+        Math.pow(b.y-a.y,2)
     );
-
 }
 
 
-/* =========================================================
-   DISTANCE FROM POINT TO LINE
-========================================================= */
-
-function distanceToSegment(
-    point,
-    a,
-    b
-) {
-
-    const dx =
-        b.x - a.x;
-
-    const dy =
-        b.y - a.y;
-
-    if (
-        dx === 0 &&
-        dy === 0
-    ) {
-
-        return distance(
-            point,
-            a
-        );
-
-    }
-
-    const t =
-        Math.max(
-            0,
-            Math.min(
-                1,
-                (
-                    (
-                        point.x - a.x
-                    ) * dx +
-                    (
-                        point.y - a.y
-                    ) * dy
-                )
-                /
-                (
-                    dx * dx +
-                    dy * dy
-                )
-            )
-        );
-
-    const closest = {
-
-        x:
-            a.x +
-            t * dx,
-
-        y:
-            a.y +
-            t * dy
-
-    };
-
-    return distance(
-        point,
-        closest
-    );
-
-}
-
-
-/* =========================================================
-   NODE
-========================================================= */
-
-function createNode(
-    type,
-    x,
-    y
-) {
+function interpolate(a,b,t) {
 
     return {
-
-        id: newId(),
-
-        type,
-
-        x,
-
-        y,
-
-        elevation: null
-
+        x: a.x + (b.x-a.x)*t,
+        y: a.y + (b.y-a.y)*t
     };
+}
 
+
+function showToast(text) {
+
+    const el = document.getElementById("toast");
+
+    el.textContent = text;
+    el.classList.add("show");
+
+    clearTimeout(showToast.timer);
+
+    showToast.timer = setTimeout(() => {
+        el.classList.remove("show");
+    }, 1500);
 }
 
 
 /* =========================================================
-   PERIMETER SIDE CREATION
-========================================================= */
+   PERIMETER
+   ========================================================= */
 
-function rebuildSides() {
+function getSidePoints(index) {
 
-    const oldSides =
-        state.sides;
+    const a = state.corners[index];
+    const b = state.corners[(index+1)%4];
 
-    state.sides = [];
-
-    if (
-        state.perimeter.length < 2
-    ) {
-
-        return;
-
-    }
-
-
-    for (
-        let i = 0;
-
-        i < state.perimeter.length;
-
-        i++
-    ) {
-
-        const start =
-            state.perimeter[i];
-
-        const end =
-            state.perimeter[
-                (
-                    i + 1
-                )
-                %
-                state.perimeter.length
-            ];
-
-
-        const old =
-            oldSides[i];
-
-
-        state.sides.push({
-
-            id:
-                old?.id ||
-                newId(),
-
-            startNode:
-                start.id,
-
-            endNode:
-                end.id,
-
-            transitionStart:
-                old?.transitionStart ??
-                0.5,
-
-            transitionEnd:
-                old?.transitionEnd ??
-                0.5
-
-        });
-
-    }
-
+    return {a,b};
 }
 
 
-/* =========================================================
-   SIDE POINT
-========================================================= */
+function pointOnSide(index,t) {
 
-function pointOnSide(
-    side,
-    percentage
-) {
+    const {a,b} = getSidePoints(index);
 
-    const a =
-        state.perimeter
-            .find(
-                n =>
-                    n.id ===
-                    side.startNode
-            );
-
-    const b =
-        state.perimeter
-            .find(
-                n =>
-                    n.id ===
-                    side.endNode
-            );
-
-    if (
-        !a ||
-        !b
-    ) {
-
-        return null;
-
-    }
-
-    return {
-
-        x:
-            a.x +
-            (
-                b.x -
-                a.x
-            )
-            *
-            percentage,
-
-        y:
-            a.y +
-            (
-                b.y -
-                a.y
-            )
-            *
-            percentage
-
-    };
-
+    return interpolate(a,b,t);
 }
 
 
-/* =========================================================
-   FIND SIDE
-========================================================= */
-
-function nearestSide(
-    point
-) {
-
-    let closest = null;
-
-    let smallest =
-        Infinity;
-
-    state.sides.forEach(
-        side => {
-
-            const a =
-                state.perimeter
-                    .find(
-                        n =>
-                            n.id ===
-                            side.startNode
-                    );
-
-            const b =
-                state.perimeter
-                    .find(
-                        n =>
-                            n.id ===
-                            side.endNode
-                    );
-
-            if (
-                !a ||
-                !b
-            ) {
-
-                return;
-
-            }
-
-            const d =
-                distanceToSegment(
-                    point,
-                    a,
-                    b
-                );
-
-            if (
-                d < smallest
-            ) {
-
-                smallest = d;
-
-                closest = side;
-
-            }
-
-        }
-    );
-
-    return smallest < 35
-        ? closest
-        : null;
-
-}
-
-
-/* =========================================================
-   MODE
-========================================================= */
-
-function setMode(
-    mode
-) {
-
-    state.mode = mode;
-
-    document
-        .querySelectorAll(
-            ".toolbar button"
-        )
-        .forEach(
-            button =>
-                button.classList.remove(
-                    "active"
-                )
-        );
-
-    const buttons = {
-
-        perimeter:
-            "perimeterMode",
-
-        measurement:
-            "measurementMode",
-
-        topology:
-            "topologyMode",
-
-        target:
-            "targetMode"
-
-    };
-
-    document
-        .getElementById(
-            buttons[mode]
-        )
-        .classList.add(
-            "active"
-        );
-
-}
-
-
-/* =========================================================
-   NODE SELECTION
-========================================================= */
-
-function selectNode(
-    node
-) {
-
-    state.selectedNode =
-        node.id;
-
-    document
-        .getElementById(
-            "selectedNode"
-        )
-        .textContent =
-
-        node.type ===
-        "perimeter"
-
-            ? "P" +
-              (
-                  state.perimeter
-                      .indexOf(node)
-                  + 1
-              )
-
-            : "M" +
-              (
-                  state.measurements
-                      .indexOf(node)
-                  + 1
-              );
-
-
-    const input =
-        document
-            .getElementById(
-                "elevationInput"
-            );
-
-
-    input.value =
-        node.elevation === null
-            ? ""
-            : node.elevation;
-
+function isInsideFloor(p) {
 
     /*
-        MOBILE SPEED OPTIMIZATION:
-
-        Selecting a measurement node
-        immediately focuses the input.
-
-        The browser's keyboard then opens
-        naturally on mobile.
+       Ray-casting test.
+       Works even if corners are moved into a non-perfect
+       rectangle.
     */
-
-    requestAnimationFrame(
-        () => {
-
-            input.focus();
-
-            input.select();
-
-        }
-    );
-
-
-    draw();
-
-}
-
-
-/* =========================================================
-   SIDE SELECTION
-========================================================= */
-
-function selectSide(
-    side
-) {
-
-    state.selectedSide =
-        side.id;
-
-
-    const index =
-        state.sides
-            .indexOf(side);
-
-
-    document
-        .getElementById(
-            "selectedSide"
-        )
-        .textContent =
-            "Side " +
-            (
-                index + 1
-            );
-
-
-    document
-        .getElementById(
-            "transitionStart"
-        )
-        .value =
-            Math.round(
-                side.transitionStart *
-                100
-            );
-
-
-    document
-        .getElementById(
-            "transitionEnd"
-        )
-        .value =
-            Math.round(
-                side.transitionEnd *
-                100
-            );
-
-
-    draw();
-
-}
-
-
-/* =========================================================
-   POINT INSIDE POLYGON
-========================================================= */
-
-function pointInside(
-    x,
-    y
-) {
-
-    if (
-        state.perimeter.length < 3
-    ) {
-
-        return true;
-
-    }
 
     let inside = false;
 
-    for (
-        let i = 0,
-            j =
-                state.perimeter.length - 1;
+    const pts = state.corners;
 
-        i <
-        state.perimeter.length;
+    for(let i=0,j=pts.length-1;i<pts.length;j=i++) {
 
-        j = i++
-    ) {
+        const xi=pts[i].x;
+        const yi=pts[i].y;
 
-        const a =
-            state.perimeter[i];
+        const xj=pts[j].x;
+        const yj=pts[j].y;
 
-        const b =
-            state.perimeter[j];
+        const intersect =
+            ((yi>p.y)!==(yj>p.y)) &&
+            (p.x < (xj-xi)*(p.y-yi)/(yj-yi)+xi);
 
-
-        const intersects =
-
-            (
-                (a.y > y) !==
-                (b.y > y)
-            )
-
-            &&
-
-            (
-                x <
-                (
-                    (
-                        b.x - a.x
-                    )
-                    *
-                    (
-                        y - a.y
-                    )
-                )
-                /
-                (
-                    b.y - a.y
-                )
-                +
-                a.x
-            );
-
-
-        if (
-            intersects
-        ) {
-
-            inside =
-                !inside;
-
-        }
-
+        if(intersect) inside=!inside;
     }
 
     return inside;
-
 }
 
 
 /* =========================================================
-   INTERPOLATION
-========================================================= */
+   DRAW FLOOR
+   ========================================================= */
 
-function interpolate(
-    x,
-    y
+function drawFloor() {
+
+    floor.setAttribute(
+        "points",
+        state.corners.map(p => `${p.x},${p.y}`).join(" ")
+    );
+}
+
+
+/* =========================================================
+   DRAW WALLS
+   ========================================================= */
+
+function drawWalls() {
+
+    wallLayer.innerHTML = "";
+
+    state.corners.forEach((corner,i) => {
+
+        const next =
+            state.corners[(i+1)%4];
+
+        const line =
+            document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "line"
+            );
+
+        line.setAttribute("x1",corner.x);
+        line.setAttribute("y1",corner.y);
+        line.setAttribute("x2",next.x);
+        line.setAttribute("y2",next.y);
+
+        line.setAttribute("class","wall-line");
+
+        wallLayer.appendChild(line);
+    });
+}
+
+
+/* =========================================================
+   CORNERS
+   ========================================================= */
+
+function drawCorners() {
+
+    cornerLayer.innerHTML = "";
+
+    state.corners.forEach((p,index) => {
+
+        const g =
+            document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "g"
+            );
+
+        const circle =
+            document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "circle"
+            );
+
+        circle.setAttribute("cx",p.x);
+        circle.setAttribute("cy",p.y);
+        circle.setAttribute("r",14);
+
+        circle.setAttribute(
+            "class",
+            "corner" + (p.locked ? " locked" : "")
+        );
+
+        circle.dataset.corner=index;
+
+        circle.addEventListener("pointerdown", e => {
+
+            e.stopPropagation();
+
+            if(p.locked) {
+                showToast(`${p.id} is locked`);
+                return;
+            }
+
+            state.dragging = {
+                type:"corner",
+                index:index
+            };
+
+            state.didDrag=false;
+
+            svg.setPointerCapture(e.pointerId);
+        });
+
+        g.appendChild(circle);
+
+        const text =
+            document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "text"
+            );
+
+        text.setAttribute("x",p.x);
+        text.setAttribute("y",p.y-20);
+
+        text.setAttribute(
+            "text-anchor",
+            "middle"
+        );
+
+        text.setAttribute(
+            "fill",
+            "white"
+        );
+
+        text.setAttribute(
+            "font-size",
+            "12"
+        );
+
+        text.textContent =
+            p.id + (p.locked ? " 🔒" : "");
+
+        text.style.pointerEvents="none";
+
+        g.appendChild(text);
+
+        cornerLayer.appendChild(g);
+    });
+}
+
+
+/* =========================================================
+   TRANSITION HANDLES
+   ========================================================= */
+
+function drawZones() {
+
+    zoneLayer.innerHTML = "";
+
+    state.sides.forEach((side,index) => {
+
+        const pStart =
+            pointOnSide(index,side.start);
+
+        const pEnd =
+            pointOnSide(index,side.end);
+
+        /*
+           Draw transition line only when handles
+           are actually separated.
+        */
+
+        if(Math.abs(side.start-side.end) > 0.005) {
+
+            const line =
+                document.createElementNS(
+                    "http://www.w3.org/2000/svg",
+                    "line"
+                );
+
+            line.setAttribute("x1",pStart.x);
+            line.setAttribute("y1",pStart.y);
+
+            line.setAttribute("x2",pEnd.x);
+            line.setAttribute("y2",pEnd.y);
+
+            line.setAttribute(
+                "class",
+                "transition-line"
+            );
+
+            zoneLayer.appendChild(line);
+
+            const mid =
+                interpolate(pStart,pEnd,.5);
+
+            const label =
+                document.createElementNS(
+                    "http://www.w3.org/2000/svg",
+                    "text"
+                );
+
+            label.setAttribute("x",mid.x);
+            label.setAttribute("y",mid.y-10);
+
+            label.setAttribute(
+                "class",
+                "zone-label"
+            );
+
+            label.textContent =
+                `${side.id} TRANSITION`;
+
+            zoneLayer.appendChild(label);
+        }
+
+        createHandle(
+            index,
+            "start",
+            side.start,
+            pStart,
+            side.startLocked
+        );
+
+        createHandle(
+            index,
+            "end",
+            side.end,
+            pEnd,
+            side.endLocked
+        );
+    });
+}
+
+
+function createHandle(
+    sideIndex,
+    type,
+    t,
+    point,
+    locked
 ) {
 
-    const points =
-        state.measurements
-            .filter(
-                p =>
-                    Number.isFinite(
-                        p.elevation
-                    )
+    const circle =
+        document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "circle"
+        );
+
+    circle.setAttribute(
+        "cx",
+        point.x
+    );
+
+    circle.setAttribute(
+        "cy",
+        point.y
+    );
+
+    circle.setAttribute(
+        "r",
+        11
+    );
+
+    circle.setAttribute(
+        "class",
+        "handle" + (locked ? " locked" : "")
+    );
+
+    circle.dataset.side=sideIndex;
+    circle.dataset.handle=type;
+
+    circle.addEventListener(
+        "pointerdown",
+        e => {
+
+            e.stopPropagation();
+
+            if(locked) {
+
+                showToast(
+                    `${state.sides[sideIndex].id} ${type} handle is locked`
+                );
+
+                return;
+            }
+
+            state.dragging = {
+                type:"handle",
+                side:sideIndex,
+                handle:type
+            };
+
+            state.didDrag=false;
+
+            svg.setPointerCapture(e.pointerId);
+        }
+    );
+
+    zoneLayer.appendChild(circle);
+
+    const label =
+        document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "text"
+        );
+
+    label.setAttribute("x",point.x);
+    label.setAttribute("y",point.y+25);
+
+    label.setAttribute(
+        "class",
+        "handle-label"
+    );
+
+    label.textContent =
+        type === "start" ? "A" : "B";
+
+    zoneLayer.appendChild(label);
+}
+
+
+/* =========================================================
+   MEASUREMENT POINTS
+   ========================================================= */
+
+function drawMeasurements() {
+
+    measurementLayer.innerHTML="";
+
+    state.measurements.forEach((m,index) => {
+
+        const circle =
+            document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "circle"
             );
 
-    if (
-        points.length === 0
-    ) {
+        circle.setAttribute("cx",m.x);
+        circle.setAttribute("cy",m.y);
 
-        return null;
+        circle.setAttribute(
+            "r",
+            m.id === state.selectedMeasurement ? 12 : 9
+        );
 
+        circle.setAttribute(
+            "class",
+            "measurement" +
+            (m.id === state.selectedMeasurement
+                ? " selected"
+                : "")
+        );
+
+        circle.addEventListener(
+            "pointerdown",
+            e => {
+
+                e.stopPropagation();
+
+                selectMeasurement(m.id);
+            }
+        );
+
+        measurementLayer.appendChild(circle);
+
+        const label =
+            document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "text"
+            );
+
+        label.setAttribute("x",m.x+12);
+        label.setAttribute("y",m.y-10);
+
+        label.setAttribute(
+            "fill",
+            "white"
+        );
+
+        label.setAttribute(
+            "font-size",
+            "11"
+        );
+
+        label.style.pointerEvents="none";
+
+        label.textContent=m.id;
+
+        measurementLayer.appendChild(label);
+    });
+}
+
+
+/* =========================================================
+   MEASUREMENT LIST
+   ========================================================= */
+
+function drawMeasurementList() {
+
+    const container =
+        document.getElementById("measurementList");
+
+    container.innerHTML="";
+
+    if(state.measurements.length===0) {
+
+        container.innerHTML =
+            `<div class="info">
+                Tap anywhere inside the floor to create
+                your first laser elevation point.
+            </div>`;
+
+        return;
     }
 
+    state.measurements.forEach(m => {
 
-    let numerator = 0;
+        const row =
+            document.createElement("div");
 
-    let denominator = 0;
+        row.className =
+            "measure-row" +
+            (m.id===state.selectedMeasurement
+                ? " selected"
+                : "");
+
+        row.innerHTML=`
+
+            <div class="measure-name">
+                ${m.id}
+            </div>
+
+            <input
+                id="input-${m.id}"
+                inputmode="decimal"
+                type="number"
+                step="0.001"
+                placeholder="Elevation"
+                value="${m.elevation ?? ""}"
+            >
+
+            <button
+                class="small-btn"
+                data-delete="${m.id}">
+                ×
+            </button>
+        `;
+
+        container.appendChild(row);
+
+        const input =
+            row.querySelector("input");
+
+        input.addEventListener(
+            "input",
+            () => {
+
+                m.elevation =
+                    input.value === ""
+                    ? null
+                    : Number(input.value);
+
+                state.topology=null;
+            }
+        );
+
+        input.addEventListener(
+            "focus",
+            () => {
+
+                state.selectedMeasurement=m.id;
+
+                drawMeasurements();
+            }
+        );
+
+        row.querySelector(
+            "[data-delete]"
+        ).addEventListener(
+            "click",
+            e => {
+
+                e.stopPropagation();
+
+                state.measurements =
+                    state.measurements.filter(
+                        x => x.id !== m.id
+                    );
+
+                if(
+                    state.selectedMeasurement === m.id
+                ) {
+                    state.selectedMeasurement=null;
+                }
+
+                state.topology=null;
+
+                drawAll();
+            }
+        );
+    });
+}
 
 
-    for (
-        const point of points
-    ) {
+/* =========================================================
+   SELECT MEASUREMENT
+   ========================================================= */
 
-        const d =
-            Math.hypot(
-                x - point.x,
-                y - point.y
-            );
+function selectMeasurement(id) {
+
+    state.selectedMeasurement=id;
+
+    drawMeasurements();
+
+    const input =
+        document.getElementById(
+            `input-${id}`
+        );
+
+    if(input) {
+
+        setTimeout(() => {
+
+            input.focus();
+            input.select();
+
+            input.scrollIntoView({
+                behavior:"smooth",
+                block:"center"
+            });
+
+        },30);
+    }
+}
 
 
-        if (
-            d < 0.001
-        ) {
+/* =========================================================
+   SIDE LIST
+   ========================================================= */
 
-            return point.elevation;
+function drawSideList() {
 
+    const container =
+        document.getElementById("sideList");
+
+    container.innerHTML="";
+
+    state.sides.forEach((side,index) => {
+
+        const active =
+            Math.abs(
+                side.start-side.end
+            ) > 0.005;
+
+        const row =
+            document.createElement("div");
+
+        row.className="panel-body";
+        row.style.borderBottom =
+            "1px solid var(--line)";
+
+        row.innerHTML=`
+
+            <div class="side-row">
+
+                <div class="side-name">
+                    ${side.id}
+                </div>
+
+                <div>
+                    <strong>${side.name}</strong>
+
+                    <div class="side-status
+                        ${active ? "active" : ""}">
+                        ${
+                            active
+                            ? "Transition active"
+                            : "No transition"
+                        }
+                    </div>
+                </div>
+
+                <button
+                    class="lock-btn"
+                    data-side-lock="${index}">
+                    ${side.startLocked && side.endLocked
+                        ? "🔒"
+                        : "Lock"}
+                </button>
+
+            </div>
+
+            <div class="side-controls">
+
+                <button
+                    data-select-handle="${index}:start">
+                    A: ${Math.round(side.start*100)}%
+                    ${side.startLocked ? "🔒" : ""}
+                </button>
+
+                <button
+                    data-select-handle="${index}:end">
+                    B: ${Math.round(side.end*100)}%
+                    ${side.endLocked ? "🔒" : ""}
+                </button>
+
+            </div>
+        `;
+
+        container.appendChild(row);
+
+        row.querySelector(
+            "[data-side-lock]"
+        ).addEventListener(
+            "click",
+            () => {
+
+                const bothLocked =
+                    side.startLocked &&
+                    side.endLocked;
+
+                side.startLocked =
+                    !bothLocked;
+
+                side.endLocked =
+                    !bothLocked;
+
+                drawAll();
+
+                showToast(
+                    bothLocked
+                    ? `${side.id} unlocked`
+                    : `${side.id} locked`
+                );
+            }
+        );
+
+        row.querySelector(
+            '[data-select-handle$=":start"]'
+        ).addEventListener(
+            "click",
+            () => {
+
+                state.selectedSide=index;
+
+                showToast(
+                    `${side.id} start handle selected`
+                );
+            }
+        );
+
+        row.querySelector(
+            '[data-select-handle$=":end"]'
+        ).addEventListener(
+            "click",
+            () => {
+
+                state.selectedSide=index;
+
+                showToast(
+                    `${side.id} end handle selected`
+                );
+            }
+        );
+    });
+}
+
+
+/* =========================================================
+   POINTER DRAGGING
+   ========================================================= */
+
+svg.addEventListener(
+    "pointermove",
+    e => {
+
+        if(!state.dragging) return;
+
+        const p=svgPoint(e);
+
+        state.didDrag=true;
+
+        const drag=state.dragging;
+
+        /* ---------------------------------------------
+           CORNER DRAG
+           --------------------------------------------- */
+
+        if(drag.type==="corner") {
+
+            const corner =
+                state.corners[drag.index];
+
+            corner.x =
+                clamp(p.x,40,960);
+
+            corner.y =
+                clamp(p.y,40,660);
+
+            state.topology=null;
+
+            drawFloor();
+            drawWalls();
+            drawCorners();
+            drawZones();
+
+            return;
         }
 
 
-        const weight =
-            1 /
-            (
-                d * d
+        /* ---------------------------------------------
+           HANDLE DRAG
+
+           Handles are constrained to their own wall.
+           --------------------------------------------- */
+
+        if(drag.type==="handle") {
+
+            const sideIndex=drag.side;
+
+            const side =
+                state.sides[sideIndex];
+
+            const a =
+                state.corners[sideIndex];
+
+            const b =
+                state.corners[
+                    (sideIndex+1)%4
+                ];
+
+            const dx=b.x-a.x;
+            const dy=b.y-a.y;
+
+            const len2=dx*dx+dy*dy;
+
+            if(len2===0) return;
+
+            /*
+               Projection of pointer onto wall.
+            */
+
+            let t =
+                ((p.x-a.x)*dx +
+                 (p.y-a.y)*dy) / len2;
+
+            t=clamp(t,0,1);
+
+            if(drag.handle==="start") {
+
+                side.start=t;
+
+            } else {
+
+                side.end=t;
+            }
+
+            state.topology=null;
+
+            drawZones();
+        }
+    }
+);
+
+
+svg.addEventListener(
+    "pointerup",
+    e => {
+
+        if(state.dragging) {
+
+            state.dragging=null;
+
+            drawAll();
+        }
+    }
+);
+
+
+/* =========================================================
+   MAP TAP
+   ========================================================= */
+
+svg.addEventListener(
+    "pointerdown",
+    e => {
+
+        /*
+           If another SVG element received the event,
+           do not create a measurement.
+        */
+
+        if(e.target !== svg) return;
+
+        if(state.mode!=="measure") return;
+
+        const p=svgPoint(e);
+
+        if(!isInsideFloor(p)) {
+
+            showToast(
+                "Tap inside the floor perimeter"
             );
 
+            return;
+        }
 
-        numerator +=
-            point.elevation *
-            weight;
+        addMeasurement(p);
+    }
+);
 
-        denominator +=
-            weight;
 
+/* =========================================================
+   ADD MEASUREMENT
+   ========================================================= */
+
+function addMeasurement(p) {
+
+    const number =
+        state.measurements.length+1;
+
+    const id=`M${number}`;
+
+    state.measurements.push({
+        id:id,
+        x:p.x,
+        y:p.y,
+        elevation:null
+    });
+
+    state.selectedMeasurement=id;
+
+    state.topology=null;
+
+    drawAll();
+
+    setTimeout(() => {
+
+        const input =
+            document.getElementById(
+                `input-${id}`
+            );
+
+        if(input) {
+
+            input.focus();
+            input.select();
+
+            input.scrollIntoView({
+                behavior:"smooth",
+                block:"center"
+            });
+        }
+
+    },50);
+}
+
+
+/* =========================================================
+   CLEAR MEASUREMENTS
+   ========================================================= */
+
+document.getElementById(
+    "clearMeasurements"
+).addEventListener(
+    "click",
+    () => {
+
+        if(!confirm(
+            "Clear all elevation measurements?"
+        )) return;
+
+        state.measurements=[];
+        state.selectedMeasurement=null;
+        state.topology=null;
+
+        drawAll();
+    }
+);
+
+
+/* =========================================================
+   MODES
+   ========================================================= */
+
+function setMode(mode) {
+
+    state.mode=mode;
+
+    document.querySelectorAll(
+        ".toolbar button"
+    ).forEach(btn => {
+        btn.classList.remove("active");
+    });
+
+    if(mode==="measure") {
+
+        document.getElementById(
+            "btnMeasure"
+        ).classList.add("active");
+
+        document.getElementById(
+            "mapInstruction"
+        ).textContent =
+            "Tap inside floor to add elevation point";
     }
 
+    if(mode==="zones") {
 
-    return denominator
-        ? numerator /
-          denominator
+        document.getElementById(
+            "btnZones"
+        ).classList.add("active");
 
-        : null;
+        document.getElementById(
+            "mapInstruction"
+        ).textContent =
+            "Drag the A/B handles along each wall";
+    }
 
+    if(mode==="topology") {
+
+        document.getElementById(
+            "btnTopology"
+        ).classList.add("active");
+
+        document.getElementById(
+            "mapInstruction"
+        ).textContent =
+            "Topology view";
+    }
+}
+
+
+document.getElementById(
+    "btnMeasure"
+).onclick=()=>setMode("measure");
+
+
+document.getElementById(
+    "btnZones"
+).onclick=()=>setMode("zones");
+
+
+document.getElementById(
+    "btnTopology"
+).onclick=()=> {
+
+    generateTopology();
+    setMode("topology");
+};
+
+
+document.getElementById(
+    "btnGenerate"
+).onclick=()=> {
+
+    generateTopology();
+    generateOutput();
+};
+
+
+/* =========================================================
+   TOPOLOGY
+   ========================================================= */
+
+function getValidMeasurements() {
+
+    return state.measurements.filter(
+        m =>
+            Number.isFinite(
+                Number(m.elevation)
+            )
+    );
+}
+
+
+function interpolateElevation(x,y) {
+
+    const pts=getValidMeasurements();
+
+    if(pts.length===0) return null;
+
+    if(pts.length===1)
+        return Number(pts[0].elevation);
+
+    /*
+       Inverse-distance weighted interpolation.
+       This provides a useful field visualization.
+    */
+
+    let weighted=0;
+    let weightTotal=0;
+
+    pts.forEach(m => {
+
+        const dx=x-m.x;
+        const dy=y-m.y;
+
+        const d=Math.sqrt(
+            dx*dx+dy*dy
+        );
+
+        if(d<1) {
+
+            weighted +=
+                Number(m.elevation);
+
+            weightTotal += 1;
+
+            return;
+        }
+
+        const w=1/(d*d);
+
+        weighted +=
+            Number(m.elevation)*w;
+
+        weightTotal += w;
+    });
+
+    return weighted/weightTotal;
+}
+
+
+/* =========================================================
+   TOPOLOGY GRID
+   ========================================================= */
+
+function generateTopology() {
+
+    const pts=getValidMeasurements();
+
+    if(pts.length<2) {
+
+        showToast(
+            "Need at least 2 elevation points"
+        );
+
+        return;
+    }
+
+    const xs =
+        state.corners.map(p=>p.x);
+
+    const ys =
+        state.corners.map(p=>p.y);
+
+    const minX=Math.min(...xs);
+    const maxX=Math.max(...xs);
+    const minY=Math.min(...ys);
+    const maxY=Math.max(...ys);
+
+    const cols=20;
+    const rows=14;
+
+    const cells=[];
+
+    for(let r=0;r<rows;r++) {
+
+        for(let c=0;c<cols;c++) {
+
+            const x1 =
+                minX +
+                (maxX-minX)*c/cols;
+
+            const x2 =
+                minX +
+                (maxX-minX)*(c+1)/cols;
+
+            const y1 =
+                minY +
+                (maxY-minY)*r/rows;
+
+            const y2 =
+                minY +
+                (maxY-minY)*(r+1)/rows;
+
+            const cx=(x1+x2)/2;
+            const cy=(y1+y2)/2;
+
+            if(!isInsideFloor({
+                x:cx,
+                y:cy
+            })) continue;
+
+            const elevation =
+                interpolateElevation(cx,cy);
+
+            if(elevation===null) continue;
+
+            cells.push({
+                x:x1,
+                y:y1,
+                w:x2-x1,
+                h:y2-y1,
+                elevation:elevation
+            });
+        }
+    }
+
+    state.topology=cells;
+
+    drawTopology();
 }
 
 
 /* =========================================================
    TOPOLOGY COLORS
-========================================================= */
+   ========================================================= */
 
 function elevationColor(
     value,
-    low,
-    high
+    min,
+    max
 ) {
 
-    if (
-        high === low
-    ) {
+    if(max===min)
+        return "rgb(120,170,120)";
 
-        return "#aaa";
+    const t=
+        clamp(
+            (value-min)/(max-min),
+            0,
+            1
+        );
 
+    /*
+       Blue → cyan → green → yellow → red
+    */
+
+    let r,g,b;
+
+    if(t<.25) {
+
+        const q=t/.25;
+
+        r=40;
+        g=100+q*100;
+        b=220;
+
+    } else if(t<.5) {
+
+        const q=(t-.25)/.25;
+
+        r=40;
+        g=200;
+        b=220-q*150;
+
+    } else if(t<.75) {
+
+        const q=(t-.5)/.25;
+
+        r=40+q*215;
+        g=200;
+        b=70-q*50;
+
+    } else {
+
+        const q=(t-.75)/.25;
+
+        r=255;
+        g=200-q*150;
+        b=20;
     }
 
-
-    const t =
-        Math.max(
-            0,
-            Math.min(
-                1,
-                (
-                    value - low
-                )
-                /
-                (
-                    high - low
-                )
-            )
-        );
-
-
-    const colors = [
-
-        [38,50,56],
-
-        [96,125,139],
-
-        [207,216,220],
-
-        [255,245,157],
-
-        [255,183,77],
-
-        [230,74,25]
-
-    ];
-
-
-    const scaled =
-        t *
-        (
-            colors.length - 1
-        );
-
-
-    const i =
-        Math.min(
-            colors.length - 2,
-            Math.floor(
-                scaled
-            )
-        );
-
-
-    const f =
-        scaled - i;
-
-
-    const a =
-        colors[i];
-
-    const b =
-        colors[i + 1];
-
-
-    return `rgb(
-        ${Math.round(
-            a[0] +
-            (
-                b[0] -
-                a[0]
-            ) * f
-        )},
-        ${Math.round(
-            a[1] +
-            (
-                b[1] -
-                a[1]
-            ) * f
-        )},
-        ${Math.round(
-            a[2] +
-            (
-                b[2] -
-                a[2]
-            ) * f
-        )}
-    )`;
-
+    return `rgb(${Math.round(r)},${Math.round(g)},${Math.round(b)})`;
 }
 
-
-/* =========================================================
-   TOPOLOGY
-========================================================= */
 
 function drawTopology() {
 
-    if (
-        !state.generated
-    ) {
+    topologyLayer.innerHTML="";
 
+    if(!state.topology ||
+       state.topology.length===0)
         return;
 
-    }
+    const values =
+        state.topology.map(
+            c=>c.elevation
+        );
 
+    const min=Math.min(...values);
+    const max=Math.max(...values);
 
-    if (
-        state.perimeter.length < 3
-    ) {
+    state.topology.forEach(cell => {
 
-        return;
-
-    }
-
-
-    const measurements =
-        state.measurements
-            .filter(
-                p =>
-                    Number.isFinite(
-                        p.elevation
-                    )
+        const rect =
+            document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "rect"
             );
 
-
-    if (
-        measurements.length < 2
-    ) {
-
-        return;
-
-    }
-
-
-    const elevations =
-        measurements
-            .map(
-                p =>
-                    p.elevation
-            );
-
-
-    const low =
-        Math.min(
-            ...elevations
+        rect.setAttribute(
+            "x",
+            cell.x
         );
 
-    const high =
-        Math.max(
-            ...elevations
+        rect.setAttribute(
+            "y",
+            cell.y
         );
 
-
-    const minX =
-        Math.min(
-            ...state.perimeter
-                .map(
-                    p =>
-                        p.x
-                )
+        rect.setAttribute(
+            "width",
+            cell.w+.5
         );
 
-    const maxX =
-        Math.max(
-            ...state.perimeter
-                .map(
-                    p =>
-                        p.x
-                )
+        rect.setAttribute(
+            "height",
+            cell.h+.5
         );
 
-    const minY =
-        Math.min(
-            ...state.perimeter
-                .map(
-                    p =>
-                        p.y
-                )
+        rect.setAttribute(
+            "fill",
+            elevationColor(
+                cell.elevation,
+                min,
+                max
+            )
         );
 
-    const maxY =
-        Math.max(
-            ...state.perimeter
-                .map(
-                    p =>
-                        p.y
-                )
+        rect.setAttribute(
+            "class",
+            "topology-cell"
         );
 
-
-    const columns = 40;
-
-    const rows = 28;
-
-
-    const width =
-        (
-            maxX -
-            minX
-        )
-        /
-        columns;
-
-
-    const height =
-        (
-            maxY -
-            minY
-        )
-        /
-        rows;
-
-
-    const group =
-        svgElement(
-            "g"
-        );
-
-
-    for (
-        let row = 0;
-        row < rows;
-        row++
-    ) {
-
-        for (
-            let column = 0;
-            column < columns;
-            column++
-        ) {
-
-            const x =
-                minX +
-                column *
-                width;
-
-            const y =
-                minY +
-                row *
-                height;
-
-
-            const cx =
-                x +
-                width / 2;
-
-            const cy =
-                y +
-                height / 2;
-
-
-            if (
-                !pointInside(
-                    cx,
-                    cy
-                )
-            ) {
-
-                continue;
-
-            }
-
-
-            const elevation =
-                interpolate(
-                    cx,
-                    cy
-                );
-
-
-            if (
-                elevation === null
-            ) {
-
-                continue;
-
-            }
-
-
-            const cell =
-                svgElement(
-                    "rect",
-                    {
-
-                        x,
-
-                        y,
-
-                        width:
-                            width + 1,
-
-                        height:
-                            height + 1,
-
-                        fill:
-                            elevationColor(
-                                elevation,
-                                low,
-                                high
-                            ),
-
-                        opacity:
-                            ".82",
-
-                        class:
-                            "topology-cell"
-
-                    }
-                );
-
-
-            group.appendChild(
-                cell
-            );
-
-        }
-
-    }
-
-
-    svg.appendChild(
-        group
-    );
-
+        topologyLayer.appendChild(rect);
+    });
 }
 
 
 /* =========================================================
-   DRAW TRANSITION HANDLES
-========================================================= */
+   TARGET / CONSTRUCTION OUTPUT
+   ========================================================= */
 
-function drawSideHandles() {
+function generateOutput() {
 
-    state.sides.forEach(
-        side => {
+    const pts=getValidMeasurements();
+
+    if(pts.length===0) {
+
+        document.getElementById(
+            "output"
+        ).textContent =
+            "No elevation measurements entered.";
+
+        return;
+    }
+
+    let target =
+        Number(
+            document.getElementById(
+                "targetElevation"
+            ).value
+        );
+
+    if(!Number.isFinite(target)) {
+
+        target =
+            Math.max(
+                ...pts.map(
+                    p=>Number(p.elevation)
+                )
+            );
+
+        document.getElementById(
+            "targetElevation"
+        ).value =
+            target.toFixed(3);
+    }
+
+    const sheet =
+        Number(
+            document.getElementById(
+                "sheetThickness"
+            ).value
+        ) || 0;
+
+    const slc =
+        Number(
+            document.getElementById(
+                "slcMinimum"
+            ).value
+        ) || 0;
+
+    let output="";
+
+    output +=
+        "FLOOR CORRECTION PLAN\n";
+    output +=
+        "=====================\n\n";
+
+    output +=
+        `Target elevation: ${target.toFixed(3)}\n`;
+    output +=
+        `Final sheet:      ${sheet.toFixed(3)} in\n`;
+    output +=
+        `SLC minimum:      ${slc.toFixed(3)} in\n\n`;
+
+    output +=
+        "MEASURED POINTS\n";
+    output +=
+        "---------------\n";
+
+    pts.forEach(p => {
+
+        const elevation =
+            Number(p.elevation);
+
+        const correction =
+            target-elevation;
+
+        const sheetCorrection =
+            correction-sheet;
+
+        output +=
+            `${p.id.padEnd(5)} ` +
+            `elev ${elevation.toFixed(3)} ` +
+            `correction ${correction >= 0 ? "+" : ""}` +
+            `${correction.toFixed(3)} in`;
+
+        output +=
+            `\n      `;
+
+        if(correction>0) {
+
+            output +=
+                `raise approximately ` +
+                `${correction.toFixed(3)} in`;
+
+        } else if(correction<0) {
+
+            output +=
+                `point is ` +
+                `${Math.abs(correction).toFixed(3)} in ` +
+                `above target`;
+
+        } else {
+
+            output +=
+                "on target";
+        }
+
+        output += "\n";
+
+        if(sheet>0) {
+
+            output +=
+                `      under-sheet build-up: ` +
+                `${Math.max(0,sheetCorrection).toFixed(3)} in\n`;
+        }
+
+        output += "\n";
+    });
+
+
+    output +=
+        "TRANSITION ZONES\n";
+    output +=
+        "----------------\n";
+
+    state.sides.forEach(side => {
+
+        const delta =
+            Math.abs(
+                side.start-side.end
+            );
+
+        if(delta<0.005) {
+
+            output +=
+                `${side.id}: NO TRANSITION\n`;
+
+        } else {
 
             const start =
-                pointOnSide(
-                    side,
-                    side.transitionStart
+                Math.min(
+                    side.start,
+                    side.end
                 );
 
             const end =
-                pointOnSide(
-                    side,
-                    side.transitionEnd
+                Math.max(
+                    side.start,
+                    side.end
                 );
 
-
-            if (
-                !start ||
-                !end
-            ) {
-
-                return;
-
-            }
-
-
-            /*
-                If the two handles are at
-                essentially the same position,
-                this side has NO transition.
-            */
-
-            const transitionDistance =
-                distance(
-                    start,
-                    end
-                );
-
-
-            if (
-                transitionDistance > 4
-            ) {
-
-                svg.appendChild(
-                    svgElement(
-                        "line",
-                        {
-
-                            x1: start.x,
-
-                            y1: start.y,
-
-                            x2: end.x,
-
-                            y2: end.y,
-
-                            class:
-                                "transition-line"
-
-                        }
-                    )
-                );
-
-
-                const mid = {
-
-                    x:
-                        (
-                            start.x +
-                            end.x
-                        ) / 2,
-
-                    y:
-                        (
-                            start.y +
-                            end.y
-                        ) / 2
-
-                };
-
-
-                const label =
-                    svgElement(
-                        "text",
-                        {
-
-                            x: mid.x,
-
-                            y:
-                                mid.y - 10,
-
-                            class:
-                                "transition-label"
-
-                        }
-                    );
-
-
-                label.textContent =
-                    Math.round(
-                        transitionDistance
-                    ) +
-                    " map units";
-
-
-                svg.appendChild(
-                    label
-                );
-
-            }
-
-
-            /*
-                START HANDLE
-            */
-
-            const startGroup =
-                svgElement(
-                    "g",
-                    {
-
-                        class:
-                            "transition-handle " +
-                            (
-                                state.draggingHandle ===
-                                side.id +
-                                ":start"
-                                    ? "selected"
-                                    : ""
-                            )
-
-                    }
-                );
-
-
-            startGroup.appendChild(
-                svgElement(
-                    "circle",
-                    {
-
-                        cx: start.x,
-
-                        cy: start.y,
-
-                        r: 9
-
-                    }
-                )
-            );
-
-
-            startGroup.addEventListener(
-                "pointerdown",
-                event => {
-
-                    event.stopPropagation();
-
-                    state.draggingHandle =
-                        side.id +
-                        ":start";
-
-                    state.selectedSide =
-                        side.id;
-
-                    selectSide(
-                        side
-                    );
-
-                    svg.setPointerCapture(
-                        event.pointerId
-                    );
-
-                }
-            );
-
-
-            svg.appendChild(
-                startGroup
-            );
-
-
-            /*
-                END HANDLE
-            */
-
-            const endGroup =
-                svgElement(
-                    "g",
-                    {
-
-                        class:
-                            "transition-handle " +
-                            (
-                                state.draggingHandle ===
-                                side.id +
-                                ":end"
-                                    ? "selected"
-                                    : ""
-                            )
-
-                    }
-                );
-
-
-            endGroup.appendChild(
-                svgElement(
-                    "circle",
-                    {
-
-                        cx: end.x,
-
-                        cy: end.y,
-
-                        r: 9
-
-                    }
-                )
-            );
-
-
-            endGroup.addEventListener(
-                "pointerdown",
-                event => {
-
-                    event.stopPropagation();
-
-                    state.draggingHandle =
-                        side.id +
-                        ":end";
-
-                    state.selectedSide =
-                        side.id;
-
-                    selectSide(
-                        side
-                    );
-
-                    svg.setPointerCapture(
-                        event.pointerId
-                    );
-
-                }
-            );
-
-
-            svg.appendChild(
-                endGroup
-            );
-
+            output +=
+                `${side.id}: ` +
+                `${(start*100).toFixed(1)}% → ` +
+                `${(end*100).toFixed(1)}%\n`;
         }
-    );
+    });
 
+
+    output += "\n";
+
+    output +=
+        "FIELD NOTE\n";
+    output +=
+        "----------\n";
+    output +=
+        "Topology between measured points is interpolated. " +
+        "Use additional laser points where the floor changes " +
+        "rapidly or where a cut/sleeper transition must be exact.\n";
+
+    document.getElementById(
+        "output"
+    ).textContent=output;
 }
 
 
 /* =========================================================
-   DRAW
-========================================================= */
+   LENGTH PARSING
+   ========================================================= */
 
-function draw() {
+function parseLength(value) {
 
-    svg.replaceChildren();
+    if(!value) return null;
 
+    value=value.trim();
 
     /*
-        TOPOLOGY
+       Supports:
+
+       18' 4"
+       18'4"
+       18.333
+       220
     */
 
+    const feetMatch =
+        value.match(
+            /([\d.]+)\s*['’]/
+        );
+
+    const inchMatch =
+        value.match(
+            /([\d.]+)\s*["”]/
+        );
+
+    if(feetMatch) {
+
+        const feet =
+            Number(feetMatch[1]);
+
+        const inches =
+            inchMatch
+            ? Number(inchMatch[1])
+            : 0;
+
+        return feet*12+inches;
+    }
+
+    return Number(value);
+}
+
+
+function formatInches(inches) {
+
+    if(!Number.isFinite(inches))
+        return "—";
+
+    const feet =
+        Math.floor(inches/12);
+
+    const remaining =
+        inches-feet*12;
+
+    if(feet>0)
+        return `${feet}' ${remaining.toFixed(1)}"`;
+
+    return `${remaining.toFixed(1)}"`;
+}
+
+
+/* =========================================================
+   PERIMETER CALIBRATION
+   ========================================================= */
+
+function showPerimeterScale() {
+
+    /*
+       The SVG itself remains geometric.
+       Physical side lengths are stored independently.
+
+       This prevents changing the visual geometry from
+       destroying the measured floor dimensions.
+    */
+
+    state.sideLengths=[];
+
+    for(let i=0;i<4;i++) {
+
+        const input =
+            document.getElementById(
+                `len${i}`
+            );
+
+        const inches =
+            parseLength(input.value);
+
+        state.sideLengths.push(
+            Number.isFinite(inches)
+            ? inches
+            : null
+        );
+    }
+}
+
+
+/* =========================================================
+   INPUT EVENTS
+   ========================================================= */
+
+for(let i=0;i<4;i++) {
+
+    document.getElementById(
+        `len${i}`
+    ).addEventListener(
+        "input",
+        showPerimeterScale
+    );
+}
+
+
+document.getElementById(
+    "targetElevation"
+).addEventListener(
+    "input",
+    () => {
+
+        state.topology=null;
+    }
+);
+
+
+/* =========================================================
+   MASTER DRAW
+   ========================================================= */
+
+function drawAll() {
+
+    drawFloor();
+    drawWalls();
     drawTopology();
-
-
-    /*
-        PERIMETER
-    */
-
-    if (
-        state.perimeter.length >= 2
-    ) {
-
-        let path = "";
-
-        state.perimeter
-            .forEach(
-                (
-                    node,
-                    index
-                ) => {
-
-                    path +=
-
-                        index === 0
-
-                            ? `M ${node.x} ${node.y}`
-
-                            : ` L ${node.x} ${node.y}`;
-
-                }
-            );
-
-
-        if (
-            state.perimeter.length >= 3
-        ) {
-
-            path += " Z";
-
-        }
-
-
-        svg.appendChild(
-            svgElement(
-                "path",
-                {
-
-                    d: path,
-
-                    class:
-                        "boundary"
-
-                }
-            )
-        );
-
-    }
-
-
-    /*
-        MEASUREMENT + PERIMETER NODES
-    */
-
-    allNodes()
-        .forEach(
-            node => {
-
-                const group =
-                    svgElement(
-                        "g",
-                        {
-
-                            class:
-                                node.type ===
-                                "measurement"
-
-                                    ? (
-                                        "measure-node " +
-                                        (
-                                            state.selectedNode ===
-                                            node.id
-                                                ? "selected"
-                                                : ""
-                                        )
-                                      )
-
-                                    : (
-                                        "corner-node " +
-                                        (
-                                            state.selectedNode ===
-                                            node.id
-                                                ? "selected"
-                                                : ""
-                                        )
-                                      )
-
-                        }
-                    );
-
-
-                group.appendChild(
-                    svgElement(
-                        "circle",
-                        {
-
-                            cx: node.x,
-
-                            cy: node.y,
-
-                            r:
-                                node.type ===
-                                "measurement"
-                                    ? 9
-                                    : 11
-
-                        }
-                    )
-                );
-
-
-                const label =
-                    svgElement(
-                        "text",
-                        {
-
-                            x: node.x,
-
-                            y:
-                                node.y - 15,
-
-                            class:
-                                node.type ===
-                                "measurement"
-                                    ? "measure-label"
-                                    : "corner-label"
-
-                        }
-                    );
-
-
-                label.textContent =
-
-                    node.type ===
-                    "measurement"
-
-                        ? "M" +
-                          (
-                            state.measurements
-                                .indexOf(
-                                    node
-                                )
-                            + 1
-                          )
-
-                        : "P" +
-                          (
-                            state.perimeter
-                                .indexOf(
-                                    node
-                                )
-                            + 1
-                          );
-
-
-                group.appendChild(
-                    label
-                );
-
-
-                if (
-                    node.type ===
-                    "measurement" &&
-                    node.elevation !== null
-                ) {
-
-                    const value =
-                        svgElement(
-                            "text",
-                            {
-
-                                x: node.x,
-
-                                y:
-                                    node.y + 23,
-
-                                class:
-                                    "measure-value"
-
-                            }
-                        );
-
-
-                    value.textContent =
-                        Number(
-                            node.elevation
-                        ).toFixed(
-                            3
-                        ) +
-                        '"';
-
-
-                    group.appendChild(
-                        value
-                    );
-
-                }
-
-
-                group.addEventListener(
-                    "pointerdown",
-                    event => {
-
-                        event.stopPropagation();
-
-                        selectNode(
-                            node
-                        );
-
-
-                        /*
-                            Perimeter nodes can be
-                            repositioned by touch.
-                        */
-
-                        if (
-                            node.type ===
-                            "perimeter"
-                        ) {
-
-                            state.draggingNode =
-                                node.id;
-
-                            svg.setPointerCapture(
-                                event.pointerId
-                            );
-
-                        }
-
-                    }
-                );
-
-
-                svg.appendChild(
-                    group
-                );
-
-            }
-        );
-
-
-    /*
-        TRANSITION HANDLES
-    */
-
-    if (
-        state.perimeter.length >= 2
-    ) {
-
-        drawSideHandles();
-
-    }
-
-
-    updateSideList();
-
-    updateStatistics();
-
+    drawZones();
+    drawMeasurements();
+    drawCorners();
+    drawMeasurementList();
+    drawSideList();
 }
 
 
 /* =========================================================
-   POINTER MOVE
-========================================================= */
-
-svg.addEventListener(
-    "pointermove",
-    event => {
-
-        /*
-            MOVE PERIMETER NODE
-        */
-
-        if (
-            state.draggingNode
-        ) {
-
-            const node =
-                allNodes()
-                    .find(
-                        n =>
-                            n.id ===
-                            state.draggingNode
-                    );
-
-
-            if (
-                node
-            ) {
-
-                const point =
-                    getSVGPoint(
-                        event
-                    );
-
-
-                node.x =
-                    Math.max(
-                        0,
-                        Math.min(
-                            SVG_WIDTH,
-                            point.x
-                        )
-                    );
-
-
-                node.y =
-                    Math.max(
-                        0,
-                        Math.min(
-                            SVG_HEIGHT,
-                            point.y
-                        )
-                    );
-
-
-                draw();
-
-            }
-
-        }
-
-
-        /*
-            MOVE TRANSITION HANDLE
-        */
-
-        if (
-            state.draggingHandle
-        ) {
-
-            const parts =
-                state.draggingHandle
-                    .split(":");
-
-
-            const side =
-                state.sides
-                    .find(
-                        s =>
-                            s.id ===
-                            parts[0]
-                    );
-
-
-            if (
-                side
-            ) {
-
-                const a =
-                    state.perimeter
-                        .find(
-                            n =>
-                                n.id ===
-                                side.startNode
-                        );
-
-                const b =
-                    state.perimeter
-                        .find(
-                            n =>
-                                n.id ===
-                                side.endNode
-                        );
-
-
-                if (
-                    a &&
-                    b
-                ) {
-
-                    const point =
-                        getSVGPoint(
-                            event
-                        );
-
-
-                    const dx =
-                        b.x -
-                        a.x;
-
-                    const dy =
-                        b.y -
-                        a.y;
-
-
-                    const lengthSquared =
-                        dx * dx +
-                        dy * dy;
-
-
-                    let t =
-                        (
-                            (
-                                point.x -
-                                a.x
-                            ) *
-                            dx +
-
-                            (
-                                point.y -
-                                a.y
-                            ) *
-                            dy
-                        )
-                        /
-                        lengthSquared;
-
-
-                    t =
-                        Math.max(
-                            0,
-                            Math.min(
-                                1,
-                                t
-                            )
-                        );
-
-
-                    if (
-                        parts[1] ===
-                        "start"
-                    ) {
-
-                        side.transitionStart =
-                            t;
-
-                    }
-                    else {
-
-                        side.transitionEnd =
-                            t;
-
-                    }
-
-
-                    draw();
-
-                }
-
-            }
-
-        }
-
-    }
-);
-
-
-/* =========================================================
-   POINTER UP
-========================================================= */
-
-svg.addEventListener(
-    "pointerup",
-    event => {
-
-        state.draggingNode =
-            null;
-
-        state.draggingHandle =
-            null;
-
-        try {
-
-            svg.releasePointerCapture(
-                event.pointerId
-            );
-
-        }
-        catch (_) {}
-
-    }
-);
-
-
-/* =========================================================
-   CANVAS CLICK
-========================================================= */
-
-svg.addEventListener(
-    "click",
-    event => {
-
-        /*
-            Ignore click after dragging.
-        */
-
-        if (
-            state.draggingNode ||
-            state.draggingHandle
-        ) {
-
-            return;
-
-        }
-
-
-        const point =
-            getSVGPoint(
-                event
-            );
-
-
-        /*
-            PERIMETER
-        */
-
-        if (
-            state.mode ===
-            "perimeter"
-        ) {
-
-            state.perimeter
-                .push(
-                    createNode(
-                        "perimeter",
-                        point.x,
-                        point.y
-                    )
-                );
-
-
-            rebuildSides();
-
-            draw();
-
-            return;
-
-        }
-
-
-        /*
-            MEASUREMENT
-        */
-
-        if (
-            state.mode ===
-            "measurement"
-        ) {
-
-            const node =
-                createNode(
-                    "measurement",
-                    point.x,
-                    point.y
-                );
-
-
-            state.measurements
-                .push(
-                    node
-                );
-
-
-            selectNode(
-                node
-            );
-
-            draw();
-
-            return;
-
-        }
-
-
-        /*
-            TOPOLOGY / SIDE
-        */
-
-        if (
-            state.mode ===
-            "topology"
-        ) {
-
-            const side =
-                nearestSide(
-                    point
-                );
-
-
-            if (
-                side
-            ) {
-
-                selectSide(
-                    side
-                );
-
-            }
-
-            return;
-
-        }
-
-
-        /*
-            TARGET
-        */
-
-        if (
-            state.mode ===
-            "target"
-        ) {
-
-            const elevation =
-                interpolate(
-                    point.x,
-                    point.y
-                );
-
-
-            if (
-                Number.isFinite(
-                    elevation
-                )
-            ) {
-
-                state.targetElevation =
-                    elevation;
-
-
-                document
-                    .getElementById(
-                        "targetElevation"
-                    )
-                    .value =
-                    elevation.toFixed(
-                        3
-                    );
-
-
-                draw();
-
-            }
-
-        }
-
-    }
-);
-
-
-/* =========================================================
-   ELEVATION SAVE
-========================================================= */
-
-document
-    .getElementById(
-        "saveElevation"
-    )
-    .addEventListener(
-        "click",
-        () => {
-
-            const node =
-                allNodes()
-                    .find(
-                        n =>
-                            n.id ===
-                            state.selectedNode
-                    );
-
-
-            if (
-                !node
-            ) {
-
-                return;
-
-            }
-
-
-            const value =
-                parseFloat(
-                    document
-                        .getElementById(
-                            "elevationInput"
-                        )
-                        .value
-                );
-
-
-            if (
-                !Number.isFinite(
-                    value
-                )
-            ) {
-
-                return;
-
-            }
-
-
-            node.elevation =
-                value;
-
-
-            draw();
-
-        }
-    );
-
-
-/* =========================================================
-   FAST MOBILE INPUT
-========================================================= */
-
-document
-    .getElementById(
-        "elevationInput"
-    )
-    .addEventListener(
-        "keydown",
-        event => {
-
-            if (
-                event.key ===
-                "Enter"
-            ) {
-
-                event.preventDefault();
-
-                document
-                    .getElementById(
-                        "saveElevation"
-                    )
-                    .click();
-
-            }
-
-        }
-    );
-
-
-/* =========================================================
-   TRANSITION INPUTS
-========================================================= */
-
-function updateSelectedSide() {
-
-    if (
-        !state.selectedSide
-    ) {
-
-        return;
-
-    }
-
-
-    const side =
-        state.sides
-            .find(
-                s =>
-                    s.id ===
-                    state.selectedSide
-            );
-
-
-    if (
-        !side
-    ) {
-
-        return;
-
-    }
-
-
-    let start =
-        parseFloat(
-            document
-                .getElementById(
-                    "transitionStart"
-                )
-                .value
-        );
-
-
-    let end =
-        parseFloat(
-            document
-                .getElementById(
-                    "transitionEnd"
-                )
-                .value
-        );
-
-
-    start =
-        Math.max(
-            0,
-            Math.min(
-                100,
-                start
-            )
-        );
-
-
-    end =
-        Math.max(
-            0,
-            Math.min(
-                100,
-                end
-            )
-        );
-
-
-    side.transitionStart =
-        start / 100;
-
-    side.transitionEnd =
-        end / 100;
-
-
-    draw();
-
-}
-
-
-document
-    .getElementById(
-        "transitionStart"
-    )
-    .addEventListener(
-        "input",
-        updateSelectedSide
-    );
-
-
-document
-    .getElementById(
-        "transitionEnd"
-    )
-    .addEventListener(
-        "input",
-        updateSelectedSide
-    );
-
-
-/* =========================================================
-   REMOVE TRANSITION
-========================================================= */
-
-document
-    .getElementById(
-        "collapseTransition"
-    )
-    .addEventListener(
-        "click",
-        () => {
-
-            if (
-                !state.selectedSide
-            ) {
-
-                return;
-
-            }
-
-
-            const side =
-                state.sides
-                    .find(
-                        s =>
-                            s.id ===
-                            state.selectedSide
-                    );
-
-
-            if (
-                !side
-            ) {
-
-                return;
-
-            }
-
-
-            /*
-                Same position =
-                no transition.
-            */
-
-            const center =
-                (
-                    side.transitionStart +
-                    side.transitionEnd
-                )
-                /
-                2;
-
-
-            side.transitionStart =
-                center;
-
-            side.transitionEnd =
-                center;
-
-
-            document
-                .getElementById(
-                    "transitionStart"
-                )
-                .value =
-                Math.round(
-                    center * 100
-                );
-
-
-            document
-                .getElementById(
-                    "transitionEnd"
-                )
-                .value =
-                Math.round(
-                    center * 100
-                );
-
-
-            draw();
-
-        }
-    );
-
-
-/* =========================================================
-   SIDE LIST
-========================================================= */
-
-function updateSideList() {
-
-    const container =
-        document
-            .getElementById(
-                "sideList"
-            );
-
-
-    container.replaceChildren();
-
-
-    state.sides
-        .forEach(
-            (
-                side,
-                index
-            ) => {
-
-                const a =
-                    state.perimeter
-                        .find(
-                            n =>
-                                n.id ===
-                                side.startNode
-                        );
-
-
-                const b =
-                    state.perimeter
-                        .find(
-                            n =>
-                                n.id ===
-                                side.endNode
-                        );
-
-
-                if (
-                    !a ||
-                    !b
-                ) {
-
-                    return;
-
-                }
-
-
-                const row =
-                    document.createElement(
-                        "div"
-                    );
-
-
-                row.className =
-                    "side-row" +
-                    (
-                        state.selectedSide ===
-                        side.id
-                            ? " active"
-                            : ""
-                    );
-
-
-                const start =
-                    Math.round(
-                        side.transitionStart *
-                        100
-                    );
-
-
-                const end =
-                    Math.round(
-                        side.transitionEnd *
-                        100
-                    );
-
-
-                const status =
-                    Math.abs(
-                        start - end
-                    ) < 1
-
-                        ? "None"
-
-                        : `${start}% → ${end}%`;
-
-
-                row.innerHTML = `
-
-                    <div class="side-name">
-                        S${index + 1}
-                    </div>
-
-                    <div>
-                        P${index + 1}
-                        →
-                        P${(
-                            index + 1
-                        ) % state.perimeter.length + 1}
-                        <br>
-                        <span
-                            style="
-                                color:
-                                var(--muted)
-                            ">
-                            ${status}
-                        </span>
-                    </div>
-
-                    <div class="side-distance">
-                        ${Math.round(
-                            distance(a,b)
-                        )}
-                    </div>
-
-                `;
-
-
-                row.addEventListener(
-                    "click",
-                    () => {
-
-                        selectSide(
-                            side
-                        );
-
-                        setMode(
-                            "topology"
-                        );
-
-                    }
-                );
-
-
-                container.appendChild(
-                    row
-                );
-
-            }
-        );
-
-}
-
-
-/* =========================================================
-   STATISTICS
-========================================================= */
-
-function updateStatistics() {
-
-    const values =
-        state.measurements
-            .map(
-                p =>
-                    p.elevation
-            )
-            .filter(
-                Number.isFinite
-            );
-
-
-    document
-        .getElementById(
-            "pointCount"
-        )
-        .textContent =
-        values.length;
-
-
-    if (
-        values.length === 0
-    ) {
-
-        [
-            "lowestPoint",
-            "highestPoint",
-            "totalVariation",
-            "maximumCorrection"
-        ]
-        .forEach(
-            id => {
-
-                document
-                    .getElementById(
-                        id
-                    )
-                    .textContent =
-                    "—";
-
-            }
-        );
-
-
-        return;
-
-    }
-
-
-    const low =
-        Math.min(
-            ...values
-        );
-
-    const high =
-        Math.max(
-            ...values
-        );
-
-
-    const variation =
-        high -
-        low;
-
-
-    const target =
-        Number.isFinite(
-            state.targetElevation
-        )
-            ? state.targetElevation
-            : high;
-
-
-    const correction =
-        Math.max(
-            0,
-            target - low
-        );
-
-
-    document
-        .getElementById(
-            "lowestPoint"
-        )
-        .textContent =
-        low.toFixed(3) +
-        '"';
-
-
-    document
-        .getElementById(
-            "highestPoint"
-        )
-        .textContent =
-        high.toFixed(3) +
-        '"';
-
-
-    document
-        .getElementById(
-            "totalVariation"
-        )
-        .textContent =
-        variation.toFixed(3) +
-        '"';
-
-
-    document
-        .getElementById(
-            "maximumCorrection"
-        )
-        .textContent =
-        correction.toFixed(3) +
-        '"';
-
-
-    updateConstruction(
-        target,
-        low
-    );
-
-}
-
-
-/* =========================================================
-   CONSTRUCTION
-========================================================= */
-
-function updateConstruction(
-    target,
-    low
-) {
-
-    const sheet =
-        parseFloat(
-            document
-                .getElementById(
-                    "underlayment"
-                )
-                .value
-        );
-
-
-    const slc =
-        parseFloat(
-            document
-                .getElementById(
-                    "slcMinimum"
-                )
-                .value
-        );
-
-
-    const total =
-        Math.max(
-            0,
-            target - low
-        );
-
-
-    const afterSheet =
-        Math.max(
-            0,
-            total - sheet
-        );
-
-
-    document
-        .getElementById(
-            "constructionOutput"
-        )
-        .innerHTML = `
-
-            Reference:
-            <strong>
-                ${target.toFixed(3)}"
-            </strong>
-
-            <br>
-
-            Maximum correction:
-            <strong>
-                ${total.toFixed(3)}"
-            </strong>
-
-            <br>
-
-            Final sheet:
-            <strong>
-                ${sheet.toFixed(3)}"
-            </strong>
-
-            <br>
-
-            Remaining correction:
-            <strong>
-                ${afterSheet.toFixed(3)}"
-            </strong>
-
-            <br>
-
-            SLC minimum entered:
-            <strong>
-                ${slc.toFixed(3)}"
-            </strong>
-
-        `;
-
-}
-
-
-/* =========================================================
-   BUTTON MODES
-========================================================= */
-
-document
-    .getElementById(
-        "perimeterMode"
-    )
-    .onclick =
-    () =>
-        setMode(
-            "perimeter"
-        );
-
-
-document
-    .getElementById(
-        "measurementMode"
-    )
-    .onclick =
-    () =>
-        setMode(
-            "measurement"
-        );
-
-
-document
-    .getElementById(
-        "topologyMode"
-    )
-    .onclick =
-    () =>
-        setMode(
-            "topology"
-        );
-
-
-document
-    .getElementById(
-        "targetMode"
-    )
-    .onclick =
-    () =>
-        setMode(
-            "target"
-        );
-
-
-/* =========================================================
-   GENERATE
-========================================================= */
-
-document
-    .getElementById(
-        "generateButton"
-    )
-    .onclick =
-    () => {
-
-        if (
-            state.perimeter.length <
-            3
-        ) {
-
-            alert(
-                "Add at least three perimeter points."
-            );
-
-            return;
-
-        }
-
-
-        if (
-            state.measurements
-                .filter(
-                    p =>
-                        Number.isFinite(
-                            p.elevation
-                        )
-                )
-                .length < 2
-        ) {
-
-            alert(
-                "Add at least two measured elevation points."
-            );
-
-            return;
-
-        }
-
-
-        state.generated =
-            true;
-
-
-        draw();
-
-    };
-
-
-/* =========================================================
-   CLEAR
-========================================================= */
-
-document
-    .getElementById(
-        "clearButton"
-    )
-    .onclick =
-    () => {
-
-        if (
-            !confirm(
-                "Clear this floor?"
-            )
-        ) {
-
-            return;
-
-        }
-
-
-        state.perimeter = [];
-
-        state.measurements = [];
-
-        state.sides = [];
-
-        state.selectedNode = null;
-
-        state.selectedSide = null;
-
-        state.targetElevation =
-            null;
-
-        state.generated =
-            false;
-
-
-        document
-            .getElementById(
-                "selectedNode"
-            )
-            .textContent =
-            "—";
-
-
-        document
-            .getElementById(
-                "selectedSide"
-            )
-            .textContent =
-            "None";
-
-
-        draw();
-
-    };
-
-
-/* =========================================================
-   TARGET
-========================================================= */
-
-document
-    .getElementById(
-        "targetElevation"
-    )
-    .addEventListener(
-        "input",
-        event => {
-
-            const value =
-                parseFloat(
-                    event.target.value
-                );
-
-
-            state.targetElevation =
-                Number.isFinite(
-                    value
-                )
-                    ? value
-                    : null;
-
-
-            draw();
-
-        }
-    );
-
-
-/* =========================================================
-   CONSTRUCTION INPUTS
-========================================================= */
-
-document
-    .getElementById(
-        "underlayment"
-    )
-    .addEventListener(
-        "change",
-        updateStatistics
-    );
-
-
-document
-    .getElementById(
-        "slcMinimum"
-    )
-    .addEventListener(
-        "input",
-        updateStatistics
-    );
-
-
-/* =========================================================
-   EXPORT
-========================================================= */
-
-document
-    .getElementById(
-        "exportButton"
-    )
-    .onclick =
-    () => {
-
-        const project = {
-
-            version: 2,
-
-            created:
-                new Date()
-                    .toISOString(),
-
-            perimeter:
-                state.perimeter,
-
-            measurements:
-                state.measurements,
-
-            sides:
-                state.sides,
-
-            targetElevation:
-                state.targetElevation
-
-        };
-
-
-        const blob =
-            new Blob(
-                [
-                    JSON.stringify(
-                        project,
-                        null,
-                        2
-                    )
-                ],
-                {
-                    type:
-                        "application/json"
-                }
-            );
-
-
-        const url =
-            URL.createObjectURL(
-                blob
-            );
-
-
-        const link =
-            document.createElement(
-                "a"
-            );
-
-
-        link.href =
-            url;
-
-        link.download =
-            "floor-topology.json";
-
-        link.click();
-
-
-        URL.revokeObjectURL(
-            url
-        );
-
-    };
-
-
-/* =========================================================
-   IMPORT
-========================================================= */
-
-document
-    .getElementById(
-        "importFile"
-    )
-    .addEventListener(
-        "change",
-        event => {
-
-            const file =
-                event.target.files[0];
-
-
-            if (
-                !file
-            ) {
-
-                return;
-
-            }
-
-
-            const reader =
-                new FileReader();
-
-
-            reader.onload =
-                () => {
-
-                    try {
-
-                        const data =
-                            JSON.parse(
-                                reader.result
-                            );
-
-
-                        state.perimeter =
-                            Array.isArray(
-                                data.perimeter
-                            )
-                                ? data.perimeter
-                                : [];
-
-
-                        state.measurements =
-                            Array.isArray(
-                                data.measurements
-                            )
-                                ? data.measurements
-                                : [];
-
-
-                        state.sides =
-                            Array.isArray(
-                                data.sides
-                            )
-                                ? data.sides
-                                : [];
-
-
-                        state.targetElevation =
-                            Number.isFinite(
-                                data.targetElevation
-                            )
-                                ? data.targetElevation
-                                : null;
-
-
-                        /*
-                            Older project files without
-                            sides get them generated.
-                        */
-
-                        if (
-                            state.sides.length ===
-                            0
-                        ) {
-
-                            rebuildSides();
-
-                        }
-
-
-                        document
-                            .getElementById(
-                                "targetElevation"
-                            )
-                            .value =
-
-                            Number.isFinite(
-                                state.targetElevation
-                            )
-
-                                ? state
-                                    .targetElevation
-                                    .toFixed(3)
-
-                                : "";
-
-
-                        state.generated =
-                            state.measurements
-                                .some(
-                                    p =>
-                                        Number.isFinite(
-                                            p.elevation
-                                        )
-                                );
-
-
-                        draw();
-
-                    }
-                    catch (
-                        error
-                    ) {
-
-                        alert(
-                            "Could not read this project."
-                        );
-
-                    }
-
-                };
-
-
-            reader.readAsText(
-                file
-            );
-
-        }
-    );
-
-
-/* =========================================================
-   INITIAL DRAW
-========================================================= */
-
-draw();
-
-})();
+   INITIALIZE
+   ========================================================= */
+
+state.sideLengths=[
+    null,
+    null,
+    null,
+    null
+];
+
+drawAll();
 
 </script>
 
