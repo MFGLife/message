@@ -1,0 +1,2302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Floor Topology Mapper</title>
+
+<style>
+:root {
+    --bg: #111;
+    --panel: #1b1b1b;
+    --panel2: #222;
+    --border: #3a3a3a;
+    --text: #eee;
+    --muted: #999;
+    --accent: #d6a84f;
+    --accent2: #f1d58a;
+    --danger: #c75c5c;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.app {
+    max-width: 1500px;
+    margin: auto;
+    padding: 18px;
+}
+
+h1 {
+    margin: 0 0 4px;
+    font-size: 24px;
+}
+
+.subtitle {
+    color: var(--muted);
+    margin-bottom: 18px;
+}
+
+/* ---------------- TOOLBAR ---------------- */
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+button,
+input,
+select {
+    min-height: 42px;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--panel);
+    color: var(--text);
+    padding: 8px 11px;
+    font-size: 14px;
+}
+
+button {
+    cursor: pointer;
+}
+
+button:hover {
+    border-color: var(--accent);
+}
+
+button.active {
+    background: var(--accent);
+    color: #111;
+    border-color: var(--accent);
+    font-weight: bold;
+}
+
+/* ---------------- LAYOUT ---------------- */
+
+.layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 310px;
+    gap: 14px;
+}
+
+.map-panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#floorMap {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 500px;
+    background:
+        linear-gradient(
+            rgba(255,255,255,.025) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(255,255,255,.025) 1px,
+            transparent 1px
+        );
+    background-size: 40px 40px;
+    touch-action: manipulation;
+}
+
+.side {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 13px;
+}
+
+.panel-title {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.help {
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.5;
+    padding: 10px 0;
+}
+
+/* ---------------- FORMS ---------------- */
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+label {
+    display: block;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+label input,
+label select {
+    display: block;
+    width: 100%;
+    margin-top: 4px;
+}
+
+.full {
+    width: 100%;
+    margin-top: 8px;
+}
+
+.value {
+    font-size: 21px;
+    font-weight: bold;
+}
+
+.stat {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255,255,255,.05);
+}
+
+.stat:last-child {
+    border-bottom: none;
+}
+
+.stat span {
+    color: var(--muted);
+}
+
+/* ---------------- SVG ---------------- */
+
+.boundary {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2.5;
+}
+
+.transition-line {
+    stroke: var(--accent2);
+    stroke-width: 6;
+    stroke-dasharray: 10 7;
+}
+
+.transition-label {
+    fill: var(--accent2);
+    font-size: 13px;
+    font-weight: bold;
+    text-anchor: middle;
+}
+
+.node {
+    cursor: pointer;
+}
+
+.node circle {
+    fill: #111;
+    stroke: #fff;
+    stroke-width: 2;
+}
+
+.node.measure circle {
+    fill: #333;
+}
+
+.node.selected circle {
+    fill: var(--accent);
+    stroke: #fff;
+    stroke-width: 3;
+}
+
+.node text {
+    fill: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    text-anchor: middle;
+    pointer-events: none;
+}
+
+.elevation-label {
+    font-size: 10px !important;
+    font-weight: normal !important;
+}
+
+/* ---------------- LEGEND ---------------- */
+
+.legend {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px;
+    color: var(--muted);
+    font-size: 11px;
+}
+
+.gradient {
+    height: 12px;
+    flex: 1;
+    border-radius: 5px;
+    background:
+        linear-gradient(
+            90deg,
+            #263238,
+            #607d8b,
+            #cfd8dc,
+            #fff59d,
+            #ffb74d,
+            #e64a19
+        );
+}
+
+/* ---------------- MOBILE ---------------- */
+
+@media(max-width:850px) {
+
+    .layout {
+        grid-template-columns: 1fr;
+    }
+
+    #floorMap {
+        min-height: 400px;
+    }
+
+}
+
+@media(max-width:500px) {
+
+    .app {
+        padding: 10px;
+    }
+
+    .toolbar button {
+        flex: 1 1 calc(50% - 8px);
+    }
+
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <h1>Floor Topology Mapper</h1>
+
+    <div class="subtitle">
+        Laser-measured floor correction and transition generator
+    </div>
+
+    <!-- TOOLBAR -->
+
+    <div class="toolbar">
+
+        <button id="perimeterMode" class="active">
+            1. Perimeter
+        </button>
+
+        <button id="measurementMode">
+            2. Elevation Nodes
+        </button>
+
+        <button id="transitionMode">
+            3. Transition
+        </button>
+
+        <button id="targetMode">
+            4. Set Target
+        </button>
+
+        <button id="generateButton">
+            Generate Topology
+        </button>
+
+        <button id="clearButton">
+            Clear
+        </button>
+
+    </div>
+
+
+    <div class="layout">
+
+        <!-- MAP -->
+
+        <div>
+
+            <div class="map-panel">
+
+                <svg
+                    id="floorMap"
+                    viewBox="0 0 1000 650"
+                    aria-label="Interactive floor topology map">
+                </svg>
+
+            </div>
+
+            <div class="legend">
+
+                <span>Low</span>
+
+                <div class="gradient"></div>
+
+                <span>High</span>
+
+            </div>
+
+            <div class="help">
+
+                <strong>Perimeter:</strong>
+                click points around the room.
+
+                <br>
+
+                <strong>Elevation Nodes:</strong>
+                click where you took laser measurements.
+
+                <br>
+
+                <strong>Transition:</strong>
+                click two perimeter nodes to define the smooth-transition span.
+
+                <br>
+
+                <strong>Set Target:</strong>
+                click the location you want to establish as the finished reference elevation.
+
+                <br>
+
+                No dragging is required.
+            </div>
+
+        </div>
+
+
+        <!-- SIDE PANEL -->
+
+        <div class="side">
+
+
+            <!-- SELECTED NODE -->
+
+            <div class="panel">
+
+                <div class="panel-title">
+                    Selected Node
+                </div>
+
+                <div
+                    id="selectedNode"
+                    class="value">
+                    —
+                </div>
+
+                <div class="form-grid">
+
+                    <label>
+                        Elevation
+
+                        <input
+                            id="elevationInput"
+                            type="number"
+                            step="0.001"
+                            placeholder="0.000">
+                    </label>
+
+                    <label>
+                        Units
+
+                        <select id="unitSelect">
+
+                            <option value="in">
+                                Inches
+                            </option>
+
+                            <option value="mm">
+                                Millimeters
+                            </option>
+
+                        </select>
+
+                    </label>
+
+                </div>
+
+                <button
+                    id="saveElevation"
+                    class="full">
+
+                    Save Elevation
+
+                </button>
+
+            </div>
+
+
+            <!-- TRANSITION -->
+
+            <div class="panel">
+
+                <div class="panel-title">
+                    Smooth Transition
+                </div>
+
+                <div
+                    id="transitionInfo"
+                    class="help">
+
+                    Select Transition mode,
+                    then click two perimeter nodes.
+
+                </div>
+
+                <label>
+
+                    Transition Width
+
+                    <input
+                        id="transitionWidth"
+                        type="number"
+                        value="48"
+                        min="1"
+                        step="1">
+
+                </label>
+
+            </div>
+
+
+            <!-- TARGET -->
+
+            <div class="panel">
+
+                <div class="panel-title">
+                    Finished Reference
+                </div>
+
+                <label>
+
+                    Target Elevation
+
+                    <input
+                        id="targetElevation"
+                        type="number"
+                        step="0.001"
+                        placeholder="Automatic">
+
+                </label>
+
+                <div class="help">
+
+                    If left automatic, the highest measured
+                    point becomes the finished reference.
+
+                </div>
+
+            </div>
+
+
+            <!-- TOPOLOGY STATS -->
+
+            <div class="panel">
+
+                <div class="panel-title">
+                    Floor Topology
+                </div>
+
+                <div class="stat">
+                    <span>Measured points</span>
+                    <strong id="pointCount">0</strong>
+                </div>
+
+                <div class="stat">
+                    <span>Lowest</span>
+                    <strong id="lowestPoint">—</strong>
+                </div>
+
+                <div class="stat">
+                    <span>Highest</span>
+                    <strong id="highestPoint">—</strong>
+                </div>
+
+                <div class="stat">
+                    <span>Total variation</span>
+                    <strong id="totalVariation">—</strong>
+                </div>
+
+                <div class="stat">
+                    <span>Maximum correction</span>
+                    <strong id="maximumCorrection">—</strong>
+                </div>
+
+            </div>
+
+
+            <!-- CONSTRUCTION -->
+
+            <div class="panel">
+
+                <div class="panel-title">
+                    Construction Layers
+                </div>
+
+                <div class="form-grid">
+
+                    <label>
+
+                        Final Underlayment
+
+                        <select id="underlayment">
+
+                            <option value="0.5">
+                                1/2"
+                            </option>
+
+                            <option value="0.375">
+                                3/8"
+                            </option>
+
+                            <option value="0.25">
+                                1/4"
+                            </option>
+
+                        </select>
+
+                    </label>
+
+                    <label>
+
+                        SLC Minimum
+
+                        <input
+                            id="slcMinimum"
+                            type="number"
+                            value="0.125"
+                            step="0.01">
+
+                    </label>
+
+                </div>
+
+                <div
+                    id="constructionOutput"
+                    class="help">
+
+                    Generate a topology to calculate
+                    the correction requirements.
+
+                </div>
+
+            </div>
+
+
+            <!-- DATA -->
+
+            <div class="panel">
+
+                <div class="panel-title">
+                    Project Data
+                </div>
+
+                <button
+                    id="exportButton"
+                    class="full">
+
+                    Export Project JSON
+
+                </button>
+
+                <label
+                    class="full"
+                    style="margin-top:8px">
+
+                    Import Project JSON
+
+                    <input
+                        id="importFile"
+                        type="file"
+                        accept=".json">
+
+                </label>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+(() => {
+
+"use strict";
+
+
+/* =========================================================
+   APPLICATION STATE
+========================================================= */
+
+const state = {
+
+    mode: "perimeter",
+
+    perimeter: [],
+
+    measurements: [],
+
+    transition: [],
+
+    selectedNode: null,
+
+    generated: false,
+
+    targetElevation: null
+
+};
+
+
+const SVG_WIDTH = 1000;
+const SVG_HEIGHT = 650;
+
+const svg =
+    document.getElementById("floorMap");
+
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function createSVG(tag, attributes = {}) {
+
+    const element =
+        document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            tag
+        );
+
+    Object.entries(attributes).forEach(
+        ([key, value]) => {
+
+            element.setAttribute(
+                key,
+                value
+            );
+
+        }
+    );
+
+    return element;
+}
+
+
+function id() {
+
+    return (
+        "node_" +
+        Math.random()
+            .toString(36)
+            .substring(2) +
+        Date.now()
+    );
+
+}
+
+
+function screenPoint(event) {
+
+    const rect =
+        svg.getBoundingClientRect();
+
+    return {
+
+        x:
+            ((event.clientX - rect.left)
+            / rect.width)
+            * SVG_WIDTH,
+
+        y:
+            ((event.clientY - rect.top)
+            / rect.height)
+            * SVG_HEIGHT
+
+    };
+
+}
+
+
+function createNode(
+    type,
+    x,
+    y
+) {
+
+    return {
+
+        id: id(),
+
+        type,
+
+        x,
+
+        y,
+
+        elevation: null
+
+    };
+
+}
+
+
+function allNodes() {
+
+    return [
+        ...state.perimeter,
+        ...state.measurements
+    ];
+
+}
+
+
+/* =========================================================
+   MODE CONTROL
+========================================================= */
+
+function setMode(mode) {
+
+    state.mode = mode;
+
+    document
+        .querySelectorAll(
+            ".toolbar button"
+        )
+        .forEach(
+            button =>
+                button.classList.remove(
+                    "active"
+                )
+        );
+
+    const buttons = {
+
+        perimeter:
+            "perimeterMode",
+
+        measurement:
+            "measurementMode",
+
+        transition:
+            "transitionMode",
+
+        target:
+            "targetMode"
+
+    };
+
+    document
+        .getElementById(
+            buttons[mode]
+        )
+        .classList.add(
+            "active"
+        );
+
+}
+
+
+/* =========================================================
+   NODE SELECTION
+========================================================= */
+
+function selectNode(node) {
+
+    state.selectedNode =
+        node.id;
+
+    document
+        .getElementById(
+            "selectedNode"
+        )
+        .textContent =
+            node.type === "perimeter"
+                ? "P" +
+                  (
+                    state.perimeter
+                        .indexOf(node)
+                    + 1
+                  )
+                : "M" +
+                  (
+                    state.measurements
+                        .indexOf(node)
+                    + 1
+                  );
+
+    document
+        .getElementById(
+            "elevationInput"
+        )
+        .value =
+            node.elevation === null
+                ? ""
+                : node.elevation;
+
+    draw();
+
+}
+
+
+/* =========================================================
+   PERIMETER TEST
+========================================================= */
+
+function pointInsidePolygon(
+    x,
+    y
+) {
+
+    if (
+        state.perimeter.length < 3
+    ) {
+
+        return true;
+
+    }
+
+    let inside = false;
+
+    for (
+        let i = 0,
+            j = state.perimeter.length - 1;
+
+        i < state.perimeter.length;
+
+        j = i++
+    ) {
+
+        const a =
+            state.perimeter[i];
+
+        const b =
+            state.perimeter[j];
+
+        const intersects =
+            (
+                (a.y > y) !==
+                (b.y > y)
+            ) &&
+            (
+                x <
+                (
+                    (b.x - a.x)
+                    *
+                    (y - a.y)
+                )
+                /
+                (b.y - a.y)
+                +
+                a.x
+            );
+
+        if (intersects) {
+
+            inside =
+                !inside;
+
+        }
+
+    }
+
+    return inside;
+
+}
+
+
+/* =========================================================
+   NEAREST PERIMETER NODE
+========================================================= */
+
+function nearestPerimeterNode(
+    x,
+    y
+) {
+
+    let nearest = null;
+
+    let distance =
+        Infinity;
+
+    state.perimeter
+        .forEach(node => {
+
+            const d =
+                Math.hypot(
+                    node.x - x,
+                    node.y - y
+                );
+
+            if (
+                d < distance
+            ) {
+
+                distance = d;
+
+                nearest = node;
+
+            }
+
+        });
+
+    return distance < 40
+        ? nearest
+        : null;
+
+}
+
+
+/* =========================================================
+   INTERPOLATION
+========================================================= */
+
+/*
+    Inverse Distance Weighting.
+
+    Every measured point contributes to
+    the elevation at a location.
+
+    Nearby measurements have more influence
+    than distant measurements.
+*/
+
+function interpolateElevation(
+    x,
+    y,
+    points
+) {
+
+    let numerator = 0;
+
+    let denominator = 0;
+
+    for (
+        const point of points
+    ) {
+
+        if (
+            !Number.isFinite(
+                point.elevation
+            )
+        ) {
+
+            continue;
+
+        }
+
+        const distance =
+            Math.hypot(
+                x - point.x,
+                y - point.y
+            );
+
+        if (
+            distance < 0.001
+        ) {
+
+            return point.elevation;
+
+        }
+
+        const weight =
+            1 /
+            Math.pow(
+                distance,
+                2
+            );
+
+        numerator +=
+            point.elevation *
+            weight;
+
+        denominator +=
+            weight;
+
+    }
+
+    if (
+        denominator === 0
+    ) {
+
+        return null;
+
+    }
+
+    return (
+        numerator /
+        denominator
+    );
+
+}
+
+
+/* =========================================================
+   COLOR MAPPING
+========================================================= */
+
+function topologyColor(
+    value,
+    minimum,
+    maximum
+) {
+
+    if (
+        maximum === minimum
+    ) {
+
+        return "rgb(180,180,180)";
+
+    }
+
+    const t =
+        Math.max(
+            0,
+            Math.min(
+                1,
+                (
+                    value - minimum
+                )
+                /
+                (
+                    maximum - minimum
+                )
+            )
+        );
+
+    const colors = [
+
+        [38,50,56],
+
+        [96,125,139],
+
+        [207,216,220],
+
+        [255,245,157],
+
+        [255,183,77],
+
+        [230,74,25]
+
+    ];
+
+    const scaled =
+        t *
+        (
+            colors.length - 1
+        );
+
+    const index =
+        Math.min(
+            colors.length - 2,
+            Math.floor(
+                scaled
+            )
+        );
+
+    const fraction =
+        scaled - index;
+
+    const a =
+        colors[index];
+
+    const b =
+        colors[index + 1];
+
+    const r =
+        Math.round(
+            a[0] +
+            (
+                b[0] - a[0]
+            )
+            *
+            fraction
+        );
+
+    const g =
+        Math.round(
+            a[1] +
+            (
+                b[1] - a[1]
+            )
+            *
+            fraction
+        );
+
+    const blue =
+        Math.round(
+            a[2] +
+            (
+                b[2] - a[2]
+            )
+            *
+            fraction
+        );
+
+    return `rgb(${r},${g},${blue})`;
+
+}
+
+
+/* =========================================================
+   ROOM BOUNDS
+========================================================= */
+
+function getBounds() {
+
+    if (
+        state.perimeter.length < 3
+    ) {
+
+        return {
+
+            minX: 0,
+
+            maxX: SVG_WIDTH,
+
+            minY: 0,
+
+            maxY: SVG_HEIGHT
+
+        };
+
+    }
+
+    return {
+
+        minX:
+            Math.min(
+                ...state.perimeter
+                    .map(p => p.x)
+            ),
+
+        maxX:
+            Math.max(
+                ...state.perimeter
+                    .map(p => p.x)
+            ),
+
+        minY:
+            Math.min(
+                ...state.perimeter
+                    .map(p => p.y)
+            ),
+
+        maxY:
+            Math.max(
+                ...state.perimeter
+                    .map(p => p.y)
+            )
+
+    };
+
+}
+
+
+/* =========================================================
+   TOPOLOGY SURFACE
+========================================================= */
+
+function createTopology() {
+
+    const points =
+        state.measurements
+            .filter(
+                point =>
+                    Number.isFinite(
+                        point.elevation
+                    )
+            );
+
+    if (
+        !state.generated ||
+        points.length < 2 ||
+        state.perimeter.length < 3
+    ) {
+
+        return null;
+
+    }
+
+    const elevations =
+        points.map(
+            p => p.elevation
+        );
+
+    const minimum =
+        Math.min(
+            ...elevations
+        );
+
+    const maximum =
+        Math.max(
+            ...elevations
+        );
+
+    const bounds =
+        getBounds();
+
+    const columns = 36;
+
+    const rows = 25;
+
+    const cellWidth =
+        (
+            bounds.maxX -
+            bounds.minX
+        )
+        /
+        columns;
+
+    const cellHeight =
+        (
+            bounds.maxY -
+            bounds.minY
+        )
+        /
+        rows;
+
+    const group =
+        createSVG("g");
+
+    for (
+        let row = 0;
+        row < rows;
+        row++
+    ) {
+
+        for (
+            let column = 0;
+            column < columns;
+            column++
+        ) {
+
+            const x =
+                bounds.minX +
+                column *
+                cellWidth;
+
+            const y =
+                bounds.minY +
+                row *
+                cellHeight;
+
+            const centerX =
+                x +
+                cellWidth / 2;
+
+            const centerY =
+                y +
+                cellHeight / 2;
+
+            if (
+                !pointInsidePolygon(
+                    centerX,
+                    centerY
+                )
+            ) {
+
+                continue;
+
+            }
+
+            const elevation =
+                interpolateElevation(
+                    centerX,
+                    centerY,
+                    points
+                );
+
+            if (
+                elevation === null
+            ) {
+
+                continue;
+
+            }
+
+            const rectangle =
+                createSVG(
+                    "rect",
+                    {
+
+                        x,
+
+                        y,
+
+                        width:
+                            cellWidth + 1,
+
+                        height:
+                            cellHeight + 1,
+
+                        fill:
+                            topologyColor(
+                                elevation,
+                                minimum,
+                                maximum
+                            ),
+
+                        opacity:
+                            0.84
+
+                    }
+                );
+
+            rectangle.dataset.elevation =
+                elevation;
+
+            group.appendChild(
+                rectangle
+            );
+
+        }
+
+    }
+
+    return group;
+
+}
+
+
+/* =========================================================
+   DRAW MAP
+========================================================= */
+
+function draw() {
+
+    svg.replaceChildren();
+
+
+    /*
+        TOPOGRAPHY
+    */
+
+    const topology =
+        createTopology();
+
+    if (
+        topology
+    ) {
+
+        svg.appendChild(
+            topology
+        );
+
+    }
+
+
+    /*
+        PERIMETER
+    */
+
+    if (
+        state.perimeter.length >= 2
+    ) {
+
+        let path = "";
+
+        state.perimeter
+            .forEach(
+                (node, index) => {
+
+                    path +=
+                        index === 0
+                            ? `M ${node.x} ${node.y}`
+                            : ` L ${node.x} ${node.y}`;
+
+                }
+            );
+
+        if (
+            state.perimeter.length >= 3
+        ) {
+
+            path += " Z";
+
+        }
+
+        svg.appendChild(
+            createSVG(
+                "path",
+                {
+
+                    d: path,
+
+                    class: "boundary"
+
+                }
+            )
+        );
+
+    }
+
+
+    /*
+        TRANSITION
+    */
+
+    if (
+        state.transition.length === 2
+    ) {
+
+        const a =
+            state.transition[0];
+
+        const b =
+            state.transition[1];
+
+        svg.appendChild(
+            createSVG(
+                "line",
+                {
+
+                    x1: a.x,
+
+                    y1: a.y,
+
+                    x2: b.x,
+
+                    y2: b.y,
+
+                    class:
+                        "transition-line"
+
+                }
+            )
+        );
+
+        const label =
+            createSVG(
+                "text",
+                {
+
+                    x:
+                        (
+                            a.x +
+                            b.x
+                        ) / 2,
+
+                    y:
+                        (
+                            a.y +
+                            b.y
+                        ) / 2 -
+                        12,
+
+                    class:
+                        "transition-label"
+
+                }
+            );
+
+        label.textContent =
+            document
+                .getElementById(
+                    "transitionWidth"
+                )
+                .value +
+            '" TRANSITION';
+
+        svg.appendChild(
+            label
+        );
+
+    }
+
+
+    /*
+        NODES
+    */
+
+    allNodes()
+        .forEach(
+            node => {
+
+                const group =
+                    createSVG(
+                        "g",
+                        {
+
+                            class:
+                                "node " +
+                                (
+                                    node.type ===
+                                    "measurement"
+                                        ? "measure "
+                                        : ""
+                                ) +
+                                (
+                                    state.selectedNode ===
+                                    node.id
+                                        ? "selected"
+                                        : ""
+                                )
+
+                        }
+                    );
+
+                const circle =
+                    createSVG(
+                        "circle",
+                        {
+
+                            cx: node.x,
+
+                            cy: node.y,
+
+                            r:
+                                node.type ===
+                                "perimeter"
+                                    ? 10
+                                    : 8
+
+                        }
+                    );
+
+                group.appendChild(
+                    circle
+                );
+
+
+                /*
+                    NODE LABEL
+                */
+
+                const label =
+                    createSVG(
+                        "text",
+                        {
+
+                            x: node.x,
+
+                            y:
+                                node.y - 15
+
+                        }
+                    );
+
+                label.textContent =
+                    node.type ===
+                    "perimeter"
+                        ? "P" +
+                          (
+                            state.perimeter
+                                .indexOf(node)
+                            + 1
+                          )
+                        : "M" +
+                          (
+                            state.measurements
+                                .indexOf(node)
+                            + 1
+                          );
+
+                group.appendChild(
+                    label
+                );
+
+
+                /*
+                    ELEVATION
+                */
+
+                if (
+                    node.elevation !==
+                    null
+                ) {
+
+                    const elevation =
+                        createSVG(
+                            "text",
+                            {
+
+                                x:
+                                    node.x,
+
+                                y:
+                                    node.y + 24,
+
+                                class:
+                                    "elevation-label"
+
+                            }
+                        );
+
+                    elevation.textContent =
+                        Number(
+                            node.elevation
+                        ).toFixed(3) +
+                        '"';
+
+                    group.appendChild(
+                        elevation
+                    );
+
+                }
+
+
+                group.addEventListener(
+                    "click",
+                    event => {
+
+                        event.stopPropagation();
+
+                        selectNode(
+                            node
+                        );
+
+                    }
+                );
+
+
+                svg.appendChild(
+                    group
+                );
+
+            }
+        );
+
+
+    updateStatistics();
+
+}
+
+
+/* =========================================================
+   CLICK CANVAS
+========================================================= */
+
+svg.addEventListener(
+    "click",
+    event => {
+
+        const point =
+            screenPoint(
+                event
+            );
+
+
+        /*
+            PERIMETER
+        */
+
+        if (
+            state.mode ===
+            "perimeter"
+        ) {
+
+            const node =
+                createNode(
+                    "perimeter",
+                    point.x,
+                    point.y
+                );
+
+            state.perimeter
+                .push(node);
+
+            draw();
+
+            return;
+
+        }
+
+
+        /*
+            MEASUREMENT
+        */
+
+        if (
+            state.mode ===
+            "measurement"
+        ) {
+
+            const node =
+                createNode(
+                    "measurement",
+                    point.x,
+                    point.y
+                );
+
+            state.measurements
+                .push(node);
+
+            selectNode(
+                node
+            );
+
+            draw();
+
+            return;
+
+        }
+
+
+        /*
+            TRANSITION
+        */
+
+        if (
+            state.mode ===
+            "transition"
+        ) {
+
+            const node =
+                nearestPerimeterNode(
+                    point.x,
+                    point.y
+                );
+
+            if (
+                node
+            ) {
+
+                if (
+                    state.transition
+                        .length >= 2
+                ) {
+
+                    state.transition = [];
+
+                }
+
+                state.transition
+                    .push(node);
+
+                const info =
+                    document
+                        .getElementById(
+                            "transitionInfo"
+                        );
+
+                if (
+                    state.transition
+                        .length === 1
+                ) {
+
+                    info.textContent =
+                        "First perimeter node selected.";
+
+                } else {
+
+                    info.textContent =
+                        "Transition selected: P" +
+                        (
+                            state.perimeter
+                                .indexOf(
+                                    state.transition[0]
+                                )
+                            + 1
+                        ) +
+                        " → P" +
+                        (
+                            state.perimeter
+                                .indexOf(
+                                    state.transition[1]
+                                )
+                            + 1
+                        );
+
+                }
+
+                draw();
+
+            }
+
+            return;
+
+        }
+
+
+        /*
+            TARGET
+        */
+
+        if (
+            state.mode ===
+            "target"
+        ) {
+
+            const points =
+                state.measurements
+                    .filter(
+                        p =>
+                            Number.isFinite(
+                                p.elevation
+                            )
+                    );
+
+            if (
+                points.length > 0
+            ) {
+
+                const elevation =
+                    interpolateElevation(
+                        point.x,
+                        point.y,
+                        points
+                    );
+
+                state.targetElevation =
+                    elevation;
+
+                document
+                    .getElementById(
+                        "targetElevation"
+                    )
+                    .value =
+                    elevation.toFixed(
+                        3
+                    );
+
+                draw();
+
+            }
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   SAVE ELEVATION
+========================================================= */
+
+document
+    .getElementById(
+        "saveElevation"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            const node =
+                allNodes()
+                    .find(
+                        n =>
+                            n.id ===
+                            state.selectedNode
+                    );
+
+            if (
+                !node
+            ) {
+
+                return;
+
+            }
+
+            const value =
+                parseFloat(
+                    document
+                        .getElementById(
+                            "elevationInput"
+                        )
+                        .value
+                );
+
+            if (
+                !Number.isFinite(
+                    value
+                )
+            ) {
+
+                alert(
+                    "Enter a valid elevation."
+                );
+
+                return;
+
+            }
+
+            node.elevation =
+                value;
+
+            draw();
+
+        }
+    );
+
+
+/* =========================================================
+   TARGET INPUT
+========================================================= */
+
+document
+    .getElementById(
+        "targetElevation"
+    )
+    .addEventListener(
+        "change",
+        event => {
+
+            const value =
+                parseFloat(
+                    event.target.value
+                );
+
+            state.targetElevation =
+                Number.isFinite(value)
+                    ? value
+                    : null;
+
+            draw();
+
+        }
+    );
+
+
+/* =========================================================
+   TRANSITION WIDTH
+========================================================= */
+
+document
+    .getElementById(
+        "transitionWidth"
+    )
+    .addEventListener(
+        "input",
+        draw
+    );
+
+
+/* =========================================================
+   TOPOLOGY GENERATION
+========================================================= */
+
+document
+    .getElementById(
+        "generateButton"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            if (
+                state.perimeter.length <
+                3
+            ) {
+
+                alert(
+                    "Add at least three perimeter nodes."
+                );
+
+                return;
+
+            }
+
+            const measured =
+                state.measurements
+                    .filter(
+                        p =>
+                            Number.isFinite(
+                                p.elevation
+                            )
+                    );
+
+            if (
+                measured.length <
+                2
+            ) {
+
+                alert(
+                    "Add at least two measured elevation nodes and enter their elevations."
+                );
+
+                return;
+
+            }
+
+            state.generated =
+                true;
+
+            draw();
+
+        }
+    );
+
+
+/* =========================================================
+   CLEAR
+========================================================= */
+
+document
+    .getElementById(
+        "clearButton"
+    )
+    .addEventListener(
+        "click",
+        () => {
+
+            if (
+                !confirm(
+                    "Clear the entire floor layout?"
+                )
+            ) {
+
+                return;
+
+            }
+
+            state.perimeter = [];
+
+            state.measurements = [];
+
+            state.transition = [];
+
+            state.selectedNode = null;
+
+            state.generated = false;
+
+            state.targetElevation =
+                null;
+
+            document
+                .getElementById(
+                    "selectedNode"
+                )
+                .textContent =
+                    "—";
+
+            document
+                .getElementById(
+                    "elevationInput"
+                )
+                .value =
+                    "";
+
+            document
+                .getElementById(
+                    "targetElevation"
+                )
+                .value =
+                    "";
+
+            document
+                .getElementById(
+                    "transitionInfo"
+                )
+                .textContent =
+                    "Select Transition mode, then click two perimeter nodes.";
+
+            draw();
+
+        }
+    );
+
+
+/* =========================================================
+   STATISTICS
+========================================================= */
+
+function updateStatistics() {
+
+    const values =
+        state.measurements
+            .map(
+                p =>
+                    p.elevation
+            )
+            .filter(
+                Number.isFinite
+            );
+
+    document
+        .getElementById(
+            "pointCount"
+        )
+        .textContent =
+            values.length;
+
+    if (
+        values.length === 0
+    ) {
+
+        document
+            .getElementById(
+                "lowestPoint"
+            )
+            .textContent =
+                "—";
+
+        document
+            .getElementById(
+                "highestPoint"
+            )
+            .textContent =
+                "—";
+
+        document
+            .getElementById(
+                "totalVariation"
+            )
+            .textContent =
+                "—";
+
+        document
+            .getElementById(
+                "maximumCorrection"
+            )
+            .textContent =
+                "—";
+
+        return;
+
+    }
+
+
+    const low =
+        Math.min(
+            ...values
+        );
+
+    const high =
+        Math.max(
+            ...values
+        );
+
+    const variation =
+        high - low;
+
+
+    let target =
+        state.targetElevation;
+
+    if (
+        !Number.isFinite(
+            target
+        )
+    ) {
+
+        target = high;
+
+    }
+
+
+    const correction =
+        Math.max(
+            0,
+            target - low
+        );
+
+
+    document
+        .getElementById(
+            "lowestPoint"
+        )
+        .textContent =
+            low.toFixed(3) +
+            '"';
+
+    document
+        .getElementById(
+            "highestPoint"
+        )
+        .textContent =
+            high.toFixed(3) +
+            '"';
+
+    document
+        .getElementById(
+            "totalVariation"
+        )
+        .textContent =
+            variation.toFixed(3) +
+            '"';
+
+    document
+        .getElementById(
+            "maximumCorrection"
+        )
+        .textContent =
+            correction.toFixed(3) +
+            '"';
+
+
+    updateConstruction(
+        target,
+        low
+    );
+
+}
+
+
+/* =========================================================
+   CONSTRUCTION CALCULATOR
+========================================================= */
+
+function updateConstruction(
+    target,
+    lowest
+) {
+
+    const underlayment =
+        parseFloat(
+            document
+                .getElementById(
+                    "underlayment"
+                )
+                .value
+        );
+
+    const slcMinimum =
+        parseFloat(
+            document
+                .getElementById(
+                    "slcMinimum"
+                )
+                .value
+        );
+
+    const maximumBuild =
+        Math.max(
+            0,
+            target -
+            lowest
+        );
+
+    const remaining =
+        Math.max(
+            0,
+            maximumBuild -
+            underlayment
+        );
+
+
+    document
+        .getElementById(
+            "constructionOutput"
+        )
+        .innerHTML =
+
+        `
